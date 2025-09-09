@@ -7,9 +7,9 @@ class HomePage(ElementInteractions):
         super().__init__(driver)
         self.driver = driver
 
-    id_search_bar = "mainSearchbar"
-    class_category_btn = "nav-desktop-menu-action"
-    class_categories = "m-megamenu__category_menu-item"
+    id_search_bar = ":R37d9d9utsq:-input"
+    xpath_category_btn = "//*[@data-testid='blt26617d4f2e17657d-header-button-category']"
+    xpath_categories = "//*[@data-testid='blt26617d4f2e17657d-header-menu-categories-menu-category-item--label']"
     link_text_perfume_man = "Perfumes Hombre"
 
     def validate_home_page(self):
@@ -23,10 +23,10 @@ class HomePage(ElementInteractions):
         self.perform_enter()
 
     def press_category_button(self):
-        self.press_element(self.class_category_btn, "class")
+        self.press_element(self.xpath_category_btn, "xpath")
 
     def hover_category(self, category):
-        categories = self.get_all_elements(self.class_categories, "class")
+        categories = self.get_all_elements(self.xpath_categories, "xpath")
         for index, category_element in enumerate(categories):
             if category_element.text == category:
                 self.hover_element(category_element)

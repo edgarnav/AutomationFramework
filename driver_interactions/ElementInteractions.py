@@ -89,6 +89,7 @@ class ElementInteractions:
         elements = None
         try:
             locator_by_type = self.locator(locator_type)
+            self.wait_element(locator_value, locator_type)
             elements = self.webdriver.find_elements(locator_by_type, locator_value)
             self.log.info(Constants.found_locator + locator_value + Constants.locator_type + locator_by_type)
             self.take_screenshot(locator_value)

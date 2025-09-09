@@ -24,11 +24,10 @@ class SearchBarSteps:
         context.product_list_page.validate_product_list_page()
         context.product_list_page.validate_results(search_term)
 
-    @when("Filter the results by size: {size_filter}, price: {price_filter}, brand: {brand_filter}")
-    def select_filters(context, size_filter, price_filter, brand_filter):
+    @when("Filter the results by size: {size_filter}, brand: {brand_filter}")
+    def select_filters(context, size_filter, brand_filter):
         context.product_list_page.press_brand_filter(brand_filter)
         context.product_list_page.press_size_filter(size_filter)
-        context.product_list_page.press_price_filter(price_filter)
 
     @then("Validate the results count")
     def validate_number_results(context):

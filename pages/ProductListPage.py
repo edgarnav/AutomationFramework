@@ -8,13 +8,14 @@ class ProductListPage(ElementInteractions):
         super().__init__(driver)
         self.driver = driver
 
-    class_product_card_name = "card-title"
+    class_product_card_name = "a-card-brand"
+    class_product_card_description = "a-card-description"
     id_search_brand_text = "searchBrand"
     id_see_more_size_filter = "Tamao"
     id_filter_brand = "brand-"
     id_filter_size = "variants.normalizedSize-"
     id_filter_price = "variants.prices.sortPrice-"
-    class_filter_applied = "a-plp__filterSelection"
+    class_filter_applied = "newChipContainer"
     class_results_lbl = "a-plp-results-title"
 
     def validate_product_list_page(self):
@@ -38,7 +39,7 @@ class ProductListPage(ElementInteractions):
         self.validate_filter_applied("Mas de $10000.0")
 
     def validate_results(self, search_term):
-        products = self.get_all_elements(self.class_product_card_name, "class")
+        products = self.get_all_elements(self.class_product_card_description, "class")
         for index, product in enumerate(products):
             if search_term in product.text.lower():
                 break

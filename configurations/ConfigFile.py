@@ -1,3 +1,3 @@
-website = "https://www.liverpool.com.mx/tienda/home"
+website = "https://www.saucedemo.com/"
 browser = "CHROME"
 hidden_view = False

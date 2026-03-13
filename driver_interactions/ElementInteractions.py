@@ -20,27 +20,6 @@ class ElementInteractions:
     def __init__(self, webdriver):
         self.webdriver = webdriver
 
-    def locator(self, locator_type):
-        if locator_type == "id":
-            return By.ID
-        elif locator_type == "name":
-            return By.NAME
-        elif locator_type == "class":
-            return By.CLASS_NAME
-        elif locator_type == "xpath":
-            return By.XPATH
-        elif locator_type == "css":
-            return By.CSS_SELECTOR
-        elif locator_type == "tag":
-            return By.TAG_NAME
-        elif locator_type == "link":
-            return By.LINK_TEXT
-        elif locator_type == "plink":
-            return By.PARTIAL_LINK_TEXT
-        else:
-            self.log.error("Locator Type : " + locator_type + " entered is not found")
-        return False
-
     def launch_web_page(self, url):
         try:
             self.webdriver.get(url)
@@ -56,44 +35,41 @@ class ElementInteractions:
     def back_page(self):
         self.webdriver.back()
 
-    def explicit_wait(self, locator_value, locator_type, time):
+    def explicit_wait(self, locator_value, locator_by_type, time):
         try:
-            locator_by_type = self.locator(locator_type)
             WebDriverWait(self.webdriver, time).until(
                 ec.presence_of_all_elements_located((locator_by_type, locator_value)))
             self.log.info(Constants.found_locator + locator_value + Constants.locator_type + locator_by_type)
         except Exception:
             self.log.error(
-                Constants.not_found_locator + locator_value + Constants.locator_type + locator_type)
+                Constants.not_found_locator + locator_value + Constants.locator_type + locator_by_type)
             print_stack()
             self.take_screenshot(locator_value)
             assert False
 
-    def get_element(self, locator_value, locator_type):
+    def get_element(self, locator_value, locator_by_type):
         element = None
         try:
-            locator_by_type = self.locator(locator_type)
             element = self.webdriver.find_element(locator_by_type, locator_value)
             self.log.info(Constants.found_locator + locator_value + Constants.locator_type + locator_by_type)
             self.take_screenshot(locator_value)
         except Exception:
             self.log.error(
-                Constants.not_found_locator + locator_value + Constants.locator_type + locator_type)
+                Constants.not_found_locator + locator_value + Constants.locator_type + locator_by_type)
             print_stack()
             self.take_screenshot(locator_value)
         return element
 
-    def get_all_elements(self, locator_value, locator_type):
+    def get_all_elements(self, locator_value, locator_by_type):
         elements = None
         try:
-            locator_by_type = self.locator(locator_type)
-            self.wait_element(locator_value, locator_type)
+            self.wait_element(locator_value, locator_by_type)
             elements = self.webdriver.find_elements(locator_by_type, locator_value)
             self.log.info(Constants.found_locator + locator_value + Constants.locator_type + locator_by_type)
             self.take_screenshot(locator_value)
         except Exception:
             self.log.error(
-                Constants.not_found_locator + locator_value + Constants.locator_type + locator_type)
+                Constants.not_found_locator + locator_value + Constants.locator_type + locator_by_type)
             print_stack()
             self.take_screenshot(locator_value)
         return elements

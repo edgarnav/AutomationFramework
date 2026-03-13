@@ -1,19 +1,16 @@
-import time
-
 from driver_interactions.ElementInteractions import ElementInteractions
 from pydantic import BaseModel, Field
 from google import genai
 from google.genai import types
 from selenium.webdriver.common.by import By
 import json
-import utilities.Logger as Logger
-
-log = Logger.func_logger()
+from driver_interactions.HTMLCleaner import HTMLCleaner
+import utilities.Logger as Log
 
 
 class ResponseStructure(BaseModel):
     thinking: str = Field(description="Breve justificación de la acción")
-    method: str = Field(description="Solo puede ser: click, escribir, verificar o esperar")
+    method: str = Field(description="Solo puede ser: click, escribir, leer, verificar o esperar")
     selector_type: str = Field(description="Debe ser: 'id', 'name', 'xpath' o 'data-testid'")
     selector_value: str = Field(description="El ID o atributo a interactuar")
     text_value: str | None = Field(default=None, description="Texto a teclear, si aplica")
@@ -21,11 +18,16 @@ class ResponseStructure(BaseModel):
 
 class GetResponseIA(ElementInteractions):
 
+    log = Log.func_logger()
+
     def __init__(self, driver):
         super().__init__(driver)
         self.driver = driver
+        self.cleaner = HTMLCleaner
 
-    def get_action_ai(self, page, action_test_case):
+    def get_action_ai(self, action_test_case):
+        html_page = self.get_html()
+        page = self.cleaner.clean_html(html_page)
         client = genai.Client()
         prompt = f"""
                 Eres el motor de razonamiento de un framework de QA automatizado.
@@ -49,7 +51,7 @@ class GetResponseIA(ElementInteractions):
             action = json.loads(response_ai.text)
             self.perform_action_ai(action)
         except Exception as e:
-            log.info(f'{{"error": "Something went wrong with LLM API: {str(e)}"}}')
+            self.log.info(f'{{"error": "Something went wrong with LLM API: {str(e)}"}}')
             assert False
 
     def perform_action_ai(self, response_ai: dict) -> bool:
@@ -71,10 +73,9 @@ class GetResponseIA(ElementInteractions):
             locator_by_type = selector_by.get(locator_type, By.ID)
 
         try:
-            log.info(f"🤖 Ejecutando: {method.upper()} en {locator_type}='{locator_value}'...")
+            self.log.info(f"🤖 Ejecutando: {method.upper()} en {locator_type}='{locator_value}'...")
             if method == "click":
                 self.press_element(locator_value, locator_by_type)
-                time.sleep(10)
 
             elif method == "escribir":
                 self.send_text(text_value, locator_value, locator_by_type)
@@ -83,11 +84,11 @@ class GetResponseIA(ElementInteractions):
                 self.is_element_displayed(locator_value, locator_by_type)
 
             else:
-                log.info(f"⚠️ Método desconocido sugerido por la IA: {method}")
+                self.log.info(f"⚠️ Método desconocido sugerido por la IA: {method}")
                 return False
 
             return True
 
         except Exception as e:
-            log.info(f"❌ Fallo al interactuar con el elemento. Error: {str(e)}")
+            self.log.info(f"❌ Fallo al interactuar con el elemento. Error: {str(e)}")
             return False

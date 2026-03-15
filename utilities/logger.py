@@ -1,6 +1,5 @@
 import inspect
 import logging
-import allure
 
 
 def func_logger():

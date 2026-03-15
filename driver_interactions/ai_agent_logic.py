@@ -1,11 +1,11 @@
-from driver_interactions.ElementInteractions import ElementInteractions
+from driver_interactions.element_interactions import ElementInteractions
 from pydantic import BaseModel, Field
 from google import genai
 from google.genai import types
 from selenium.webdriver.common.by import By
 import json
-from driver_interactions.HTMLCleaner import HTMLCleaner
-import utilities.Logger as Log
+from driver_interactions.html_cleaner import HTMLCleaner
+import utilities.logger as log
 
 
 class ResponseStructure(BaseModel):
@@ -18,7 +18,7 @@ class ResponseStructure(BaseModel):
 
 class GetResponseIA(ElementInteractions):
 
-    log = Log.func_logger()
+    log = log.func_logger()
 
     def __init__(self, driver):
         super().__init__(driver)
@@ -54,11 +54,11 @@ class GetResponseIA(ElementInteractions):
             self.log.info(f'{{"error": "Something went wrong with LLM API: {str(e)}"}}')
             assert False
 
-    def perform_action_ai(self, response_ai: dict) -> bool:
-        method = response_ai.get("method")
-        locator_type = response_ai.get("selector_type")
-        locator_value = response_ai.get("selector_value")
-        text_value = response_ai.get("text_value")
+    def perform_action_ai(self, action: dict) -> bool:
+        method = action.get("method")
+        locator_type = action.get("selector_type")
+        locator_value = action.get("selector_value")
+        text_value = action.get("text_value")
 
         selector_by = {
             "id": By.ID,

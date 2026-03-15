@@ -1,7 +1,7 @@
-from driver_interactions.ElementInteractions import ElementInteractions
-from driver_interactions.InitWebDriver import InitWebDriver
-from driver_interactions.AIAgentLogic import GetResponseIA
-import configurations.ConfigFile as Configs
+from driver_interactions.element_interactions import ElementInteractions
+from driver_interactions.init_webdriver import InitWebDriver
+from driver_interactions.ai_agent_logic import GetResponseIA
+import configurations.configurations as Configs
 import pytest
 import allure
 
@@ -12,9 +12,7 @@ def driver_setup(request):
     interactions_object = ElementInteractions(driver)
     interactions_object.launch_web_page(Configs.website)
     request.cls.driver = driver
-
-    yield  # Tests run here
-
+    yield
     driver.quit()
 
 
@@ -28,7 +26,7 @@ class TestAIAgent:
         # Notice we now use self.driver instead of just driver
         self.actions_ai_object = GetResponseIA(self.driver)
 
-        instrucciones = [
+        instructions = [
             "Escribe 'standard_user' en el campo de nombre de usuario",
             "Escribe 'secret_sauce' en el campo de contraseña",
             "Haz clic en el botón para iniciar sesión",
@@ -36,6 +34,6 @@ class TestAIAgent:
             "Haz clic en el botón Add to cart para agregar el producto",
             "Verifica que el texto del botón haya cambiado a 'Remove'"
         ]
-        for paso in instrucciones:
-            with allure.step(f"Intent: {paso}"):
-                self.actions_ai_object.get_action_ai(paso)
+        for step in instructions:
+            with allure.step(f"Intent: {step}"):
+                self.actions_ai_object.get_action_ai(step)

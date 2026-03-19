@@ -1,11 +1,13 @@
 from driver_interactions.element_interactions import ElementInteractions
-from pydantic import BaseModel, Field
-from google import genai
-from google.genai import types
 from selenium.webdriver.common.by import By
-import json
 from driver_interactions.html_cleaner import HTMLCleaner
+from utilities.manage_saved_testcases import ManageCache
+from pydantic import BaseModel, Field
+from google.genai import types
+from google import genai
 import utilities.logger as log
+import allure
+import json
 
 
 class ResponseStructure(BaseModel):
@@ -16,7 +18,7 @@ class ResponseStructure(BaseModel):
     text_value: str | None = Field(default=None, description="Texto a teclear, si aplica")
 
 
-class GetResponseIA(ElementInteractions):
+class GetResponseIA(ElementInteractions, ManageCache):
 
     log = log.func_logger()
 
@@ -24,6 +26,34 @@ class GetResponseIA(ElementInteractions):
         super().__init__(driver)
         self.driver = driver
         self.cleaner = HTMLCleaner
+
+    def cache_verification_definition(self, step, test_id, test_name):
+        data_test = self.load_test_step_cache(test_id)
+
+        # Si el archivo no existe, creamos la estructura base
+        if not data_test:
+            data_test = {"id": test_id, "nombre": test_name, "pasos": {}}
+
+        steps = data_test["pasos"]
+
+        with allure.step(f"Ejecutando: {step}"):
+            # Escenario A: Buscar en su archivo JSON propio
+            if step in steps:
+                self.log.info(f"⚡ [FILE-CACHE] Usando datos de {test_id}.json")
+                if self.perform_action_ai(steps[step]):
+                    return True
+
+            # Escenario B: Si no está en su archivo, consultar IA
+            self.log.info(f"🤖 [IA] Aprendiendo nuevo paso para {test_id}...")
+            action_ai = self.get_action_ai(step)
+
+            if self.perform_action_ai(action_ai):
+                # Guardar solo en el archivo de este test
+                data_test["pasos"][step] = action_ai
+                self.save_test_step_cache(test_id, data_test)
+                self.log.info(f"💾 [SAVED] Archivo {test_id}.json actualizado.")
+                return True
+        return False
 
     def get_action_ai(self, action_test_case):
         html_page = self.get_html()
@@ -49,7 +79,7 @@ class GetResponseIA(ElementInteractions):
                 ),
             )
             action = json.loads(response_ai.text)
-            self.perform_action_ai(action)
+            return action
         except Exception as e:
             self.log.info(f'{{"error": "Something went wrong with LLM API: {str(e)}"}}')
             assert False

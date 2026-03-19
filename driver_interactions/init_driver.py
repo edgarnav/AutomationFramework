@@ -8,7 +8,7 @@ import configurations.configurations as configurations
 class InitWebDriver:
 
     @staticmethod
-    def init_web_driver():
+    def init_driver():
         if configurations.browser.lower() == 'chrome':
             return InitWebDriver.init_chrome_driver()
         elif configurations.browser.lower() == 'firefox':

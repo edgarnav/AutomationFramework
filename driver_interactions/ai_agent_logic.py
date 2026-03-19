@@ -27,28 +27,24 @@ class GetResponseIA(ElementInteractions, ManageCache):
         self.driver = driver
         self.cleaner = HTMLCleaner
 
-    def cache_verification_definition(self, step, test_id, test_name):
+    def testcase_saved_verification_definition(self, step, test_id, test_name):
         data_test = self.load_test_step_cache(test_id)
 
-        # Si el archivo no existe, creamos la estructura base
         if not data_test:
             data_test = {"id": test_id, "nombre": test_name, "pasos": {}}
 
         steps = data_test["pasos"]
 
         with allure.step(f"Ejecutando: {step}"):
-            # Escenario A: Buscar en su archivo JSON propio
             if step in steps:
                 self.log.info(f"⚡ [FILE-CACHE] Usando datos de {test_id}.json")
                 if self.perform_action_ai(steps[step]):
                     return True
 
-            # Escenario B: Si no está en su archivo, consultar IA
             self.log.info(f"🤖 [IA] Aprendiendo nuevo paso para {test_id}...")
             action_ai = self.get_action_ai(step)
 
             if self.perform_action_ai(action_ai):
-                # Guardar solo en el archivo de este test
                 data_test["pasos"][step] = action_ai
                 self.save_test_step_cache(test_id, data_test)
                 self.log.info(f"💾 [SAVED] Archivo {test_id}.json actualizado.")
@@ -82,7 +78,7 @@ class GetResponseIA(ElementInteractions, ManageCache):
             return action
         except Exception as e:
             self.log.info(f'{{"error": "Something went wrong with LLM API: {str(e)}"}}')
-            assert False
+            return False
 
     def perform_action_ai(self, action: dict) -> bool:
         method = action.get("method")

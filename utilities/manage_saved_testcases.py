@@ -6,10 +6,12 @@ class ManageCache:
 
     @staticmethod
     def get_cache_path(test_id):
-        """Genera la ruta: test_data_cache/TC-001.json"""
-        cache_dir = "test_data_cache"
+        cache_dir = "saved_testcases"
         if not os.path.exists(cache_dir):
-            os.makedirs(cache_dir)
+            try:
+                os.makedirs(cache_dir, exist_ok=True)
+            except OSError:
+                pass
         return os.path.join(cache_dir, f"{test_id}.json")
 
     def load_test_step_cache(self, test_id):

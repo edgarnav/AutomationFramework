@@ -1,9 +1,18 @@
 from driver_interactions.element_interactions import ElementInteractions
-from driver_interactions.init_webdriver import InitWebDriver
+from driver_interactions.init_driver import InitWebDriver
 from driver_interactions.ai_agent_logic import GetResponseIA
-import configurations.configurations as Configs
+import configurations.configurations as configurations
+import pandas as pd
 import pytest
 import allure
+
+
+def load_testcases_from_excel(path_file):
+    df = pd.read_excel(path_file)
+
+    test_cases = df.groupby(['id', 'name'])['step_description'].apply(list).reset_index()
+
+    return test_cases.to_dict('records')
 
 
 @allure.feature("AI-Modular-Caching")
@@ -12,23 +21,22 @@ class TestSmartAutomation:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        self.driver = InitWebDriver().init_web_driver()
+        self.driver = InitWebDriver().init_driver()
         interactions_object = ElementInteractions(self.driver)
-        interactions_object.launch_web_page(Configs.website)
+        interactions_object.launch_web_page(configurations.website)
         yield
         self.driver.quit()
 
-    def test_smart_login_flow(self):
-        test_id, test_name = "TC-105", "Agregar producto a carrito"
-        instructions = [
-            "Escribe 'standard_user' en el campo de nombre de usuario",
-            "Escribe 'secret_sauce' en el campo de contraseña",
-            "Haz clic en el botón para iniciar sesión",
-            "Haz clic en el primer producto que dice 'Sauce Labs Backpack",
-            "Haz clic en el botón Add to cart para agregar el producto",
-            "Verifica que el texto del botón haya cambiado a 'Remove'"
-        ]
+    @pytest.mark.parametrize("case", load_testcases_from_excel("TestAIFramework.xlsx"))
+    def test_smart_login_flow(self, case):
+        test_id = case['id']
+        test_name = case['name']
+        steps = case['step_description']
+
+        allure.dynamic.title(f"{test_id}: {test_name}")
+        allure.dynamic.story(test_name)
+
         self.actions_ai_object = GetResponseIA(self.driver)
-        for step in instructions:
-            with allure.step(f"Intent: {step}"):
-                self.actions_ai_object.cache_verification_definition(step, test_id, test_name)
+        for step in steps:
+            result = self.actions_ai_object.testcase_saved_verification_definition(step, test_id, test_name)
+            assert result is True, f"Fallo en {test_id} durante el paso: {step}"

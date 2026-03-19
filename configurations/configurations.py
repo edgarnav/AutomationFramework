@@ -1,3 +1,3 @@
-website = "https://www.saucedemo.com/"
+website = "https://practicetestautomation.com/practice-test-login/"
 browser = "CHROME"
-hidden_view = False
+hidden_view = True

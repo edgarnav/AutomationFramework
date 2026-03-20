@@ -1,3 +1,4 @@
+import configurations.configurations as configurations
 import json
 import os
 
@@ -6,7 +7,7 @@ class ManageCache:
 
     @staticmethod
     def get_cache_path(test_id):
-        cache_dir = "saved_testcases"
+        cache_dir = configurations.path_saved_testcases
         if not os.path.exists(cache_dir):
             try:
                 os.makedirs(cache_dir, exist_ok=True)

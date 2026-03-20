@@ -21,13 +21,14 @@ class TestSmartAutomation:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        self.driver = InitWebDriver().init_driver()
+        test_case_info = load_testcases_from_excel(configurations.matrix_testcases_path)
+        self.driver = InitWebDriver().init_driver(test_case_info)
         interactions_object = ElementInteractions(self.driver)
         interactions_object.launch_web_page(configurations.website)
         yield
         self.driver.quit()
 
-    @pytest.mark.parametrize("case", load_testcases_from_excel("TestAIFramework.xlsx"))
+    @pytest.mark.parametrize("case", load_testcases_from_excel(configurations.matrix_testcases_path))
     def test_smart_login_flow(self, case):
         test_id = case['id']
         test_name = case['name']

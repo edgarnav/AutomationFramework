@@ -5,6 +5,7 @@ from utilities.manage_saved_testcases import ManageCache
 from pydantic import BaseModel, Field
 from google.genai import types
 from google import genai
+import configurations.configurations as configurations
 import utilities.logger as log
 import allure
 import json
@@ -52,8 +53,8 @@ class GetResponseIA(ElementInteractions, ManageCache):
         return False
 
     def get_action_ai(self, action_test_case):
-        html_page = self.get_html()
-        page = self.cleaner.clean_html(html_page)
+        source_page = self.get_html()
+        page = self.clean_page_source(source_page)
         client = genai.Client()
         prompt = f"""
                 Eres el motor de razonamiento de un framework de QA automatizado.
@@ -92,9 +93,11 @@ class GetResponseIA(ElementInteractions, ManageCache):
             "xpath": By.XPATH,
         }
 
-        if locator_type == "data-testid":
+        if locator_type == "data-testid" and configurations.platform != "android":
             locator_by_type = By.XPATH
             locator_value = f"//*[@data-testid='{locator_value}']"
+        elif locator_type == "id" and configurations.platform == "android":
+            locator_by_type = By.ACCESSIBILITY_ID
         else:
             locator_by_type = selector_by.get(locator_type, By.ID)
 
@@ -118,3 +121,15 @@ class GetResponseIA(ElementInteractions, ManageCache):
         except Exception as e:
             self.log.info(f"❌ Fallo al interactuar con el elemento. Error: {str(e)}")
             return False
+
+    def clean_page_source(self, source_page):
+        if configurations.platform == "web":
+            page = self.cleaner.clean_html(source_page)
+        elif configurations.platform == "android":
+            page = self.cleaner.clean_android_xml(source_page)
+        elif configurations.platform == "ios":
+            page = self.cleaner.clean_ios_xml(source_page)
+        else:
+            self.log.error(f"❌La plataforma no es válida : {configurations.platform}")
+            assert False
+        return page

@@ -1,3 +1,4 @@
+import configurations.configurations as configurations
 import os
 
 
@@ -7,7 +8,7 @@ def get_ios_capabilities(test_id, test_name):
         "platformName": "iOS",
         "appium:automationName": "XCUITest",
         "appium:deviceName": "iPhone .* ",
-        "appium:platformVersion": "17.0",  # iOS version
+        "appium:platformVersion": configurations.mobile_platformVersion,
         "appium:app": "storage:filename=app.ipa",
 
         "sauce:options": {
@@ -27,7 +28,7 @@ def get_android_capabilities(test_id, test_name):
         "platformName": "Android",
         "appium:automationName": "UiAutomator2",
         "appium:deviceName": "Google Pixel .*|Samsung Galaxy .*",
-        "appium:platformVersion": "14.0",  # Android version
+        "appium:platformVersion": configurations.mobile_platformVersion,
         "appium:app": "storage:filename=mi_app_coppel.apk",
 
         "appium:appPackage": "com.coppel.android",
@@ -40,5 +41,17 @@ def get_android_capabilities(test_id, test_name):
             "name": f"{test_id}: {test_name}",
             "deviceOrientation": "portrait"
         }
+    }
+    return caps
+
+
+def get_windows_capabilities():
+
+    caps = {
+        "platformName": "Windows",
+        "appium:automationName": "windows",
+        "appium:app": configurations.windows_application_path_exe,
+        "appium:deviceName": "WindowsPC",
+        "appium:newCommandTimeout": 3600
     }
     return caps

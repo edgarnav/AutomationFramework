@@ -1,4 +1,5 @@
 from driver_interactions.element_interactions import ElementInteractions
+from appium.webdriver.common.appiumby import AppiumBy
 from selenium.webdriver.common.by import By
 from driver_interactions.html_cleaner import HTMLCleaner
 from utilities.manage_saved_testcases import ManageCache
@@ -93,13 +94,15 @@ class GetResponseIA(ElementInteractions, ManageCache):
             "xpath": By.XPATH,
         }
 
-        if locator_type == "data-testid" and configurations.platform != "android":
-            locator_by_type = By.XPATH
-            locator_value = f"//*[@data-testid='{locator_value}']"
-        elif locator_type == "id" and configurations.platform == "android":
-            locator_by_type = By.ACCESSIBILITY_ID
+        if configurations.platform in ['android', 'ios', 'windows']:
+            if locator_type in ['id', 'accessibility-id', 'automation-id']:
+                locator_by_type = AppiumBy.ACCESSIBILITY_ID
+            elif locator_type == 'nombre':
+                locator_by_type = AppiumBy.NAME
+            else:
+                locator_by_type = AppiumBy.XPATH
         else:
-            locator_by_type = selector_by.get(locator_type, By.ID)
+            locator_by_type = By.ID if locator_type == 'id' else By.XPATH
 
         try:
             self.log.info(f"🤖 Ejecutando: {method.upper()} en {locator_type}='{locator_value}'...")
@@ -129,6 +132,8 @@ class GetResponseIA(ElementInteractions, ManageCache):
             page = self.cleaner.clean_android_xml(source_page)
         elif configurations.platform == "ios":
             page = self.cleaner.clean_ios_xml(source_page)
+        elif configurations.platform == "windows":
+            page = self.cleaner.clean_desktop_html(source_page)
         else:
             self.log.error(f"❌La plataforma no es válida : {configurations.platform}")
             assert False

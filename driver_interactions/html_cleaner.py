@@ -83,3 +83,23 @@ class HTMLCleaner:
                 cleaned_elements.append(item)
 
         return cleaned_elements
+
+    @staticmethod
+    def clean_desktop_html(xml_source):
+
+        root = etree.fromstring(xml_source.encode('utf-8'))
+        cleaned_elements = []
+
+        for elem in root.xpath("//*[@IsOffscreen='False']"):
+            item = {
+                "type": elem.get("ControlType", "").replace("ControlType.", ""),
+                "automation-id": elem.get("AutomationId", ""),
+                "name": elem.get("Name", ""),
+                "class": elem.get("ClassName", ""),
+                "enabled": elem.get("IsEnabled", "True")
+            }
+
+            if item["automation-id"] or item["name"]:
+                cleaned_elements.append(item)
+
+        return cleaned_elements

@@ -93,11 +93,12 @@ class ElementInteractions:
             element.click()
             self.log.info(constants.clicked_element + locator_value + constants.locator_type + locator_by_type)
             self.take_screenshot(locator_value)
+            return True
         except Exception:
             self.log.error(constants.not_clicked_element + locator_value + constants.locator_type + locator_by_type)
             print_stack()
             self.take_screenshot(locator_value)
-            assert False
+            return False
 
     def send_text(self, text, locator_value, locator_by_type):
         try:
@@ -107,12 +108,13 @@ class ElementInteractions:
             self.log.info(
                 "Sent the text " + text + " in element with locator value " + locator_value + constants.locator_type + locator_by_type)
             self.take_screenshot(locator_value)
+            return True
         except Exception:
             self.log.error(
                 "Unable to sent the text " + text + " in element with locator value " + locator_value + constants.locator_type + locator_by_type)
             print_stack()
             self.take_screenshot(locator_value)
-            assert False
+            return False
 
     def get_text(self, locator_value, locator_type):
         element_text = None
@@ -152,7 +154,7 @@ class ElementInteractions:
             self.log.error(constants.not_element_displayed + locator_value + constants.locator_type + locator_by_type)
             print_stack()
             self.take_screenshot(locator_value)
-            assert False
+            return False
 
     def scroll_to_element(self, locator_value, locator_type):
         try:

@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from lxml import etree
 
 
-class HTMLCleaner:
+class PageCleaner:
 
     @staticmethod
     def clean_html(html_source):

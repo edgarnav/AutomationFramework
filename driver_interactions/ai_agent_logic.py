@@ -65,7 +65,7 @@ class GetResponseIA(ElementInteractions, ManageCache):
                     name="VEREDICTO_IA_DIAGNOSTICO",
                     attachment_type=allure.attachment_type.JSON
                 )
-                self.log.info(f"🚨 DIAGNÓSTICO FINAL: {diagnosis['tipo_error']} - {diagnosis['analisis_visual']}")
+                self.log.info(f"🚨 DIAGNÓSTICO FINAL: {diagnosis['type_error']} - {diagnosis['visual_analysis']}")
         return False
 
     def get_action_ai(self, action_test_case):

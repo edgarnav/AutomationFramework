@@ -20,24 +20,22 @@ def load_testcases_from_excel(path_file):
 class TestSmartAutomation:
 
     @pytest.fixture(autouse=True)
-    def setup(self):
-        test_case_info = load_testcases_from_excel(configurations.matrix_testcases_path)
-        self.driver = InitWebDriver().init_driver(test_case_info)
-        interactions_object = ElementInteractions(self.driver)
-        interactions_object.launch_web_page(configurations.website)
+    def setup(self, case):
+        self.driver = InitWebDriver().init_driver(case['id'], case['name'])
+        ElementInteractions(self.driver)
         yield
         self.driver.quit()
 
     @pytest.mark.parametrize("case", load_testcases_from_excel(configurations.matrix_testcases_path))
     def test_smart_login_flow(self, case):
-        test_id = case['id']
-        test_name = case['name']
+        testcase_id = case['id']
+        testcase_name = case['name']
         steps = case['step_description']
 
-        allure.dynamic.title(f"{test_id}: {test_name}")
-        allure.dynamic.story(test_name)
+        allure.dynamic.title(f"{testcase_id}: {testcase_name}")
+        allure.dynamic.story(testcase_name)
 
         self.actions_ai_object = GetResponseIA(self.driver)
         for step in steps:
-            result = self.actions_ai_object.testcase_saved_verification_definition(step, test_id, test_name)
-            assert result is True, f"Fallo en {test_id} durante el paso: {step}"
+            result = self.actions_ai_object.testcase_saved_verification_definition(step, testcase_id, testcase_name)
+            assert result is True, f"Fallo en {testcase_id} durante el paso: {step}"

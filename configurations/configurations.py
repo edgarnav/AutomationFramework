@@ -3,10 +3,11 @@ path_saved_testcases = "saved_testcases"  # Folder name where the automated test
 # Define the platform where you will perform the testcases
 platform = "web"  # web, android, ios, mobile_web, windows
 # Web application
-website = "https://practicetestautomation.com/practice-test-login/"
+website_app_url = "https://practicetestautomation.com/practice-test-login/"
 browser = "chrome"  # chrome, firefox
 hide_browser = True
 # Mobile applications
 appium_server_url = ""  # URL appium server, leave empty for windows platform
 mobile_platformVersion = ""  # Specify the OS version for mobile android or ios
 windows_application_path_exe = ""  # path/tp/application.exe
+application_name = ""  # Name of the mobile application to test app.ip / app.aab / app.apk

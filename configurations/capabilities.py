@@ -9,8 +9,8 @@ def get_ios_capabilities(test_id, test_name):
         "appium:automationName": "XCUITest",
         "appium:deviceName": "iPhone .* ",
         "appium:platformVersion": configurations.mobile_platformVersion,
-        "appium:app": "storage:filename=app.ipa",
-
+        "appium:app": f"storage:filename={configurations.application_name}",
+        "appium:autoGrantPermissions": True,
         "sauce:options": {
             "username": os.environ.get("SAUCE_USERNAME"),
             "accessKey": os.environ.get("SAUCE_ACCESS_KEY"),
@@ -22,23 +22,21 @@ def get_ios_capabilities(test_id, test_name):
     return caps
 
 
-def get_android_capabilities(test_id, test_name):
+def get_android_capabilities(testcase_id, testcase_name):
 
     caps = {
         "platformName": "Android",
         "appium:automationName": "UiAutomator2",
-        "appium:deviceName": "Google Pixel .*|Samsung Galaxy .*",
+        "appium:deviceName": "Samsung_Galaxy_A52_nttmx_us",
         "appium:platformVersion": configurations.mobile_platformVersion,
-        "appium:app": "storage:filename=mi_app_coppel.apk",
-
-        "appium:appPackage": "com.coppel.android",
-        "appium:appWaitActivity": "com.coppel.android.MainActivity",
+        "appium:app": f"storage:filename={configurations.application_name}",
+        "appium:autoGrantPermissions": True,
 
         "sauce:options": {
             "username": os.environ.get("SAUCE_USERNAME"),
             "accessKey": os.environ.get("SAUCE_ACCESS_KEY"),
             "build": "Build-Android-AI-001",
-            "name": f"{test_id}: {test_name}",
+            "name": f"{testcase_id}: {testcase_name}",
             "deviceOrientation": "portrait"
         }
     }

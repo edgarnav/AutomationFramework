@@ -33,3 +33,32 @@ def prompt_diagnosis(step_testcase, platform, page):
         2. ¿Hay un mensaje de error, un spinner infinito o la pantalla está en blanco? (Bug de la App)
         3. ¿El selector existe pero no es clickeable? (Error de automatización)
         """
+
+
+def prompt_diagnosis_api(response, expected_criteria):
+    return f"""
+        Eres un Arquitecto de APIs y QA Lead. Un test de integración ha fallado.
+
+        RESPUESTA REAL DEL SERVIDOR (JSON):
+        {json.dumps(response, indent=2)}
+
+        CRITERIOS DE VALIDACIÓN QUE FALLARON:
+        {json.dumps(expected_criteria, indent=2)}
+
+        TU TAREA:
+        Analiza si la falla es un error de lógica en el backend (datos incorrectos), 
+        un cambio no notificado en la estructura del API (error de contrato), 
+        o un problema de permisos.
+        """
+
+
+def prompt_diagnosis_db(response, expected_result, query):
+    return f"""
+        Analiza esta falla de Base de Datos:
+        QUERY EJECUTADO: {query}
+        REGISTRO ENCONTRADO: {response}
+        LO QUE SE ESPERABA: {expected_result}
+    
+        Determina si el error es porque el proceso de backend no terminó de escribir 
+        o si los datos se están guardando con un formato incorrecto.
+        """

@@ -1,6 +1,6 @@
 from driver_interactions.element_interactions import ElementInteractions
 from driver_interactions.init_driver import InitWebDriver
-from driver_interactions.ai_agent_logic import GetResponseIA
+from ai_actions.ai_agent_logic import AIActionDefinition
 import configurations.configurations as configurations
 import pandas as pd
 import pytest
@@ -35,7 +35,7 @@ class TestSmartAutomation:
         allure.dynamic.title(f"{testcase_id}: {testcase_name}")
         allure.dynamic.story(testcase_name)
 
-        self.actions_ai_object = GetResponseIA(self.driver)
+        self.actions_ai_object = AIActionDefinition(self.driver)
         for step in steps:
-            result = self.actions_ai_object.testcase_saved_verification_definition(step, testcase_id, testcase_name)
+            result = self.actions_ai_object.ai_action_definition(step, testcase_id, testcase_name)
             assert result is True, f"Fallo en {testcase_id} durante el paso: {step}"

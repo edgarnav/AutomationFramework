@@ -45,15 +45,26 @@ class PageCleaner:
         cleaned_elements = []
 
         for elem in root.xpath("//*[@clickable='true' or @focusable='true']"):
+
+            text_element = elem.get("text", "")
+            desc_element = elem.get("content-desc", "")
+
+            if not text_element and not desc_element:
+                text_child = elem.xpath(".//*[@text!='']/@text")
+                desc_child = elem.xpath(".//*[@content-desc!='']/@content-desc")
+                text_element = " ".join(text_child) if text_child else ""
+                desc_element = " ".join(desc_child) if desc_child else ""
+
             item = {
-                "class": elem.get("class").split('.')[-1],
-                "text": elem.get("text", "")[:50],
+                "type": elem.get("class", "").split('.')[-1],
                 "resource-id": elem.get("resource-id", "").split('/')[-1],
-                "content-desc": elem.get("content-desc", ""),
-                "enabled": elem.get("enabled")
+                "text": text_element[:50].strip(),
+                "description": desc_element[:50].strip()
             }
-            if item["text"] or item["resource-id"] or item["content-desc"]:
+
+            if item["resource-id"] or item["text"] or item["description"]:
                 cleaned_elements.append(item)
+
         return cleaned_elements
 
     @staticmethod

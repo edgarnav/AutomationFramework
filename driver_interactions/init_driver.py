@@ -48,14 +48,16 @@ class InitWebDriver:
     @staticmethod
     def init_appium_driver(testcase_id, testcase_name):
         if configurations.platform == "ios":
-            caps = capabilities.get_ios_capabilities(testcase_id, testcase_name)
+            options = capabilities.get_ios_capabilities(testcase_id, testcase_name)
         elif configurations.platform == "android":
-            caps = capabilities.get_android_capabilities(testcase_id, testcase_name)
+            options = capabilities.get_android_capabilities(testcase_id, testcase_name)
         else:
-            caps = capabilities.get_windows_capabilities()
-        options = AppiumOptions().load_capabilities(caps)
-        driver = appium_driver.Remote(
-            command_executor=configurations.appium_server_url,
-            options=options
-        )
-        return driver
+            options = capabilities.get_windows_capabilities()
+        try:
+            driver = appium_driver.Remote(
+                command_executor=configurations.appium_server_url,
+                options=options
+            )
+            return driver
+        except Exception:
+            return False

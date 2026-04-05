@@ -181,7 +181,8 @@ class ElementInteractions:
             print_stack()
             self.take_screenshot(constants.not_element_displayed)
 
-    def get_html(self):
+    def get_source(self):
+        time.sleep(5)
         try:
             page = self.webdriver.page_source
             return page

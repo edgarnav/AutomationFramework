@@ -33,7 +33,6 @@ class TestSmartAutomation:
         steps = case['step_description']
 
         allure.dynamic.title(f"{testcase_id}: {testcase_name}")
-        allure.dynamic.story(testcase_name)
 
         self.actions_ai_object = AIActionDefinition(self.driver)
         for step in steps:

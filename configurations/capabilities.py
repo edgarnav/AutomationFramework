@@ -1,46 +1,43 @@
+from appium.options.android import UiAutomator2Options
 import configurations.configurations as configurations
+import unicodedata
 import os
 
 
-def get_ios_capabilities(test_id, test_name):
+def get_ios_capabilities(testcase_id, testcase_name):
 
-    caps = {
-        "platformName": "iOS",
-        "appium:automationName": "XCUITest",
-        "appium:deviceName": "iPhone .* ",
-        "appium:platformVersion": configurations.mobile_platformVersion,
-        "appium:app": f"storage:filename={configurations.application_name}",
-        "appium:autoGrantPermissions": True,
-        "sauce:options": {
-            "username": os.environ.get("SAUCE_USERNAME"),
-            "accessKey": os.environ.get("SAUCE_ACCESS_KEY"),
-            "build": "Build-AI-Framework-001",
-            "name": f"{test_id}: {test_name}",
-            "deviceOrientation": "portrait"
-        }
+    options = UiAutomator2Options()
+    options.platform_name = configurations.platform
+    options.automation_name = "XCUITest"
+    options.set_capability("appium:deviceName", ".*")
+    options.app = f"storage:filename={configurations.application_name}"
+    options.auto_grant_permissions = True
+    sauce_options = {
+        "username":  os.environ.get("SAUCE_USERNAME"),
+        "accessKey": os.environ.get("SAUCE_ACCESS_KEY"),
+        "name": f"{testcase_id}: {remove_accents(testcase_name)}",
+        "phoneOnly": True,
     }
-    return caps
+    options.set_capability("sauce:options", sauce_options)
+    return options
 
 
 def get_android_capabilities(testcase_id, testcase_name):
 
-    caps = {
-        "platformName": "Android",
-        "appium:automationName": "UiAutomator2",
-        "appium:deviceName": "Samsung_Galaxy_A52_nttmx_us",
-        "appium:platformVersion": configurations.mobile_platformVersion,
-        "appium:app": f"storage:filename={configurations.application_name}",
-        "appium:autoGrantPermissions": True,
-
-        "sauce:options": {
-            "username": os.environ.get("SAUCE_USERNAME"),
-            "accessKey": os.environ.get("SAUCE_ACCESS_KEY"),
-            "build": "Build-Android-AI-001",
-            "name": f"{testcase_id}: {testcase_name}",
-            "deviceOrientation": "portrait"
-        }
+    options = UiAutomator2Options()
+    options.platform_name = configurations.platform
+    options.automation_name = "UiAutomator2"
+    options.set_capability("appium:deviceName", ".*")
+    options.app = f"storage:filename={configurations.application_name}"
+    options.auto_grant_permissions = True
+    sauce_options = {
+        "username":  os.environ.get("SAUCE_USERNAME"),
+        "accessKey": os.environ.get("SAUCE_ACCESS_KEY"),
+        "name": f"{testcase_id}: {remove_accents(testcase_name)}",
+        "phoneOnly": True,
     }
-    return caps
+    options.set_capability("sauce:options", sauce_options)
+    return options
 
 
 def get_windows_capabilities():
@@ -53,3 +50,15 @@ def get_windows_capabilities():
         "appium:newCommandTimeout": 3600
     }
     return caps
+
+
+def remove_accents(text):
+
+    normalize_text = unicodedata.normalize('NFD', text)
+
+    final_text = "".join(
+        c for c in normalize_text
+        if unicodedata.category(c) != 'Mn'
+    )
+
+    return final_text

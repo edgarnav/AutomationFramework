@@ -72,8 +72,8 @@ class AIActionDefinition(ElementInteractions, ManageCache):
                     attachment_type=allure.attachment_type.JSON
                 )
 
-                self.log.info(f"⚠️ Validation failed: {diagnosis_api['categoria_error']}")
-                self.log.info(f"📝 Details: {diagnosis_api['analisis_detalle']}")
+                self.log.info(f"⚠️ Validation failed: {diagnosis_api['type_error']}")
+                self.log.info(f"📝 Details: {diagnosis_api['detailed_analysis']}")
 
                 return False
 
@@ -93,7 +93,7 @@ class AIActionDefinition(ElementInteractions, ManageCache):
                 self.log.info(f"💾 [SAVED] File {test_id}.json updated.")
                 return True
             else:
-                source_page = self.get_html()
+                source_page = self.get_source()
                 page = self.cleaner_selector(source_page)
                 diagnosis_api = self.diagnosis.perform_auto_diagnosis(step, page, self.driver.get_screenshot_as_base64())
                 allure.attach(self.driver.get_screenshot_as_png(), name="Failure_Capture",
@@ -109,7 +109,7 @@ class AIActionDefinition(ElementInteractions, ManageCache):
 
     def get_action_ai(self, action_test_case):
 
-        source_page = self.get_html()
+        source_page = self.get_source()
         page = self.cleaner_selector(source_page)
 
         try:
@@ -136,7 +136,7 @@ class AIActionDefinition(ElementInteractions, ManageCache):
         locator_value = action.get("selector_value")
         text_value = action.get("text_value")
 
-        if configurations.platform in ['android', 'ios', 'windows']:
+        if configurations.platform in ['ios', 'windows']:
             if locator_type in ['id', 'accessibility-id', 'automation-id']:
                 locator_by_type = AppiumBy.ACCESSIBILITY_ID
             elif locator_type == 'name':

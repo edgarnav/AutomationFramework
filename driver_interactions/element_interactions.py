@@ -7,6 +7,9 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.actions.action_builder import ActionBuilder
+from selenium.webdriver.common.actions.pointer_input import PointerInput
+from selenium.webdriver.common.actions import interaction
 
 import utilities.constants as constants
 import utilities.logger as log
@@ -156,18 +159,34 @@ class ElementInteractions:
             self.take_screenshot(locator_value)
             return False
 
-    def scroll_to_element(self, locator_value, locator_type):
+    def scroll_to_element(self, locator_value, locator_by_type):
+        pointer_scroll = PointerInput(interaction.POINTER_TOUCH, "scroll")
+        actions = ActionBuilder(self.webdriver, mouse=pointer_scroll)
+
+        size = self.webdriver.get_window_size()
+        start_x = int(size['width'] * 0.5)
+        start_y = int(size['height'] * 0.65)
+        end_y = int(size['height'] * 0.35)
+
+        actions.pointer_action.move_to_location(start_x, start_y)
+        actions.pointer_action.pointer_down()
+
+        actions.pointer_action.pause(0.2)
+
+        actions.pointer_action.move_to_location(start_x, end_y)
+
+        actions.pointer_action.pause(0.2)
+        actions.pointer_action.release()
+
+        actions.perform()
         try:
-            element = self.wait_element(locator_value, locator_type)
-            actions = ActionChains(self.webdriver)
-            actions.move_to_element(element).perform()
-            self.log.info(constants.element_found_scrolling + locator_value + constants.locator_type + locator_type)
-            self.take_screenshot(locator_value)
+            wait = WebDriverWait(self.webdriver, 1, poll_frequency=1,
+                                 ignored_exceptions=[ElementNotVisibleException, NoSuchElementException])
+            element = wait.until(ec.presence_of_element_located((locator_by_type, locator_value)))
+            element.is_displayed()
+            self.log.info(constants.found_locator + locator_value + constants.locator_type + locator_by_type)
             return True
         except Exception:
-            self.log.error(constants.not_element_found_scrolling + locator_value + constants.locator_type + locator_type)
-            print_stack()
-            self.take_screenshot(locator_value)
             return False
 
     def hover_element(self, element):

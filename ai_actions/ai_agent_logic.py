@@ -21,7 +21,7 @@ import json
 
 class ResponseStructure(BaseModel):
     thinking: str = Field(description="Breve justificación de la acción")
-    method: str = Field(description="Solo puede ser: 'click', 'write', 'read', 'verify' o 'wait'")
+    method: str = Field(description="Solo puede ser: 'click', 'write', 'read', 'verify', 'wait' o 'scroll'")
     selector_type: str = Field(description="Debe ser: 'id', 'name', 'xpath' o 'data-testid'")
     selector_value: str = Field(description="El ID o atributo a interactuar")
     text_value: str | None = Field(default=None, description="Texto a teclear, si aplica")
@@ -81,11 +81,40 @@ class AIActionDefinition(ElementInteractions, ManageCache):
 
             if step in steps:
                 self.log.info(f"⚡ [FILE-CACHE] Using data from {test_id}.json")
+
+                if steps[step].get("method") == "scroll":
+                    locator_value = steps[step].get("selector_value")
+                    locator_by_type = steps[step].get("selector_type")
+                    max_swipes = 5
+
+                    for attempt in range(max_swipes):
+                        if self.scroll_to_element(locator_value, locator_by_type):
+                            return True
+                        elif attempt == max_swipes:
+                            return False
+
                 if self.perform_action_ai(steps[step]):
                     return True
 
             self.log.info(f"🤖 [IA] Learning new step for {test_id}...")
             action_ai = self.get_action_ai(step)
+
+            if action_ai.get("method") == "scroll":
+                locator_value = action_ai.get("selector_value")
+                locator_by_type = action_ai.get("selector_type")
+                max_swipes = 5
+                for attempt in range(max_swipes):
+                    if self.scroll_to_element(locator_value, locator_by_type):
+                        data_test["steps"][step] = action_ai
+                        self.save_test_step_cache(test_id, data_test)
+                        self.log.info(f"💾 [SAVED] File {test_id}.json updated.")
+                        return True
+                    elif attempt <= max_swipes:
+                        action_ai = self.get_action_ai(step)
+                        locator_value = action_ai.get("selector_value")
+                        locator_by_type = action_ai.get("selector_type")
+                    else:
+                        return False
 
             if self.perform_action_ai(action_ai):
                 data_test["steps"][step] = action_ai

@@ -27,7 +27,6 @@ def get_android_capabilities(testcase_id, testcase_name):
     options = UiAutomator2Options()
     options.platform_name = configurations.platform
     options.automation_name = "UiAutomator2"
-    options.set_capability("appium:deviceName", ".*")
     options.app = f"storage:filename={configurations.application_name}"
     options.auto_grant_permissions = True
     sauce_options = {
@@ -35,8 +34,13 @@ def get_android_capabilities(testcase_id, testcase_name):
         "accessKey": os.environ.get("SAUCE_ACCESS_KEY"),
         "name": f"{testcase_id}: {remove_accents(testcase_name)}",
         "phoneOnly": True,
+        "appiumVersion": "latest"
     }
     options.set_capability("sauce:options", sauce_options)
+    options.set_capability("appium:deviceName", ".*")
+    options.set_capability("chromedriverAutodownload", True)
+    options.set_capability("appium:goog:chromeOptions", {"w3c": False})
+
     return options
 
 

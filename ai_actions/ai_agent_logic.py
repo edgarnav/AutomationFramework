@@ -49,7 +49,7 @@ class AIActionDefinition(ElementInteractions, ManageCache):
 
         steps = data_test["steps"]
 
-        if step.startswith("DB_QUERY:"):
+        if step.upper().startswith("DB_QUERY:"):
             config_db = json.loads(step.replace("DB_QUERY:", ""))
             success, res_db = db_actions.perform_step_db(config_db, self.var_manager)
 
@@ -58,7 +58,7 @@ class AIActionDefinition(ElementInteractions, ManageCache):
                 allure.attach(json.dumps(diagnosis_db, indent=2), "Diagnosis AI DB")
             return success
 
-        elif step.startswith("API_REQUEST:"):
+        elif step.upper().startswith("API_REQUEST:"):
             config_json = json.loads(step.replace("API_REQUEST:", ""))
             success, response_server = self.api_request.perform_api_request(config_json)
 
@@ -165,9 +165,9 @@ class AIActionDefinition(ElementInteractions, ManageCache):
         locator_value = action.get("selector_value")
         text_value = action.get("text_value")
 
-        if configurations.platform in ['ios', 'windows']:
-            if locator_type in ['id', 'accessibility-id', 'automation-id']:
-                locator_by_type = AppiumBy.ACCESSIBILITY_ID
+        if configurations.platform.lower() in ["android", "ios", "windows"]:
+            if locator_type in ["id", "accessibility-id", "automation-id"]:
+                locator_by_type = AppiumBy.ID
             elif locator_type == 'name':
                 locator_by_type = AppiumBy.NAME
             else:
@@ -196,16 +196,16 @@ class AIActionDefinition(ElementInteractions, ManageCache):
 
     def cleaner_selector(self, source_page):
 
-        if configurations.platform == "web":
+        if configurations.platform.lower() == "web":
             page = self.cleaner.clean_html(source_page)
 
-        elif configurations.platform == "android":
+        elif configurations.platform.lower() == "android":
             page = self.cleaner.clean_android_xml(source_page)
 
-        elif configurations.platform == "ios":
+        elif configurations.platform.lower() == "ios":
             page = self.cleaner.clean_ios_xml(source_page)
 
-        elif configurations.platform == "windows":
+        elif configurations.platform.lower() == "windows":
             page = self.cleaner.clean_desktop_html(source_page)
 
         else:

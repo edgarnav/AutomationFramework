@@ -3,6 +3,7 @@ import configurations.configurations as configurations
 import configurations.prompts as prompt
 from google.genai import types
 from google import genai
+import utilities.logger as logger
 import json
 import base64
 
@@ -18,19 +19,24 @@ class PerformDiagnosis:
 
     @staticmethod
     def perform_auto_diagnosis(test_instruction, page, screenshot_b64):
-        client = genai.Client()
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=[
-                prompt.prompt_diagnosis(test_instruction, configurations.platform, page),
-                types.Part.from_bytes(data=base64.b64decode(screenshot_b64), mime_type="image/png")
-            ],
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=AIDiagnosisModel
+        log = logger.func_logger()
+        try:
+            client = genai.Client()
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=[
+                    prompt.prompt_diagnosis(test_instruction, configurations.platform, page),
+                    types.Part.from_bytes(data=base64.b64decode(screenshot_b64), mime_type="image/png")
+                ],
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=AIDiagnosisModel
+                )
             )
-        )
-        return json.loads(response.text)
+            return json.loads(response.text)
+        except Exception as e:
+            log.error(f'{{"error": "Something went wrong with LLM API: {str(e)}"}}')
+            assert False
 
 
 class AIDiagnosisAPIModel(BaseModel):
@@ -45,19 +51,24 @@ class PerformDiagnosisAPI:
 
     @staticmethod
     def perform_diagnosis_api(response_api, expected_criteria):
+        log = logger.func_logger()
 
-        client = genai.Client()
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt.prompt_diagnosis_api(response_api, expected_criteria),
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=AIDiagnosisAPIModel,
-                temperature=0.1
+        try:
+            client = genai.Client()
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt.prompt_diagnosis_api(response_api, expected_criteria),
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=AIDiagnosisAPIModel,
+                    temperature=0.1
+                )
             )
-        )
 
-        return json.loads(response.text)
+            return json.loads(response.text)
+        except Exception as e:
+            log.error(f'{{"error": "Something went wrong with LLM API: {str(e)}"}}')
+            assert False
 
 
 class AIDiagnosisDBModel(BaseModel):
@@ -70,15 +81,20 @@ class PerformDiagnosisDB:
 
     @staticmethod
     def perform_diagnosis_db(response_db, expected_criteria, query):
+        log = logger.func_logger()
 
-        client = genai.Client()
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt.prompt_diagnosis_db(response_db, expected_criteria, query),
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=AIDiagnosisAPIModel,
-                temperature=0.1
+        try:
+            client = genai.Client()
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt.prompt_diagnosis_db(response_db, expected_criteria, query),
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=AIDiagnosisAPIModel,
+                    temperature=0.1
+                )
             )
-        )
-        return json.loads(response.text)
+            return json.loads(response.text)
+        except Exception as e:
+            log.error(f'{{"error": "Something went wrong with LLM API: {str(e)}"}}')
+            assert False

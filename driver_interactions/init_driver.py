@@ -3,7 +3,6 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium import webdriver as selenium_driver
 from appium import webdriver as appium_driver
-from appium.options.common import AppiumOptions
 import configurations.configurations as configurations
 import configurations.capabilities as capabilities
 
@@ -12,14 +11,14 @@ class InitWebDriver:
 
     @staticmethod
     def init_driver(testcase_id, testcase_name):
-        if configurations.platform == "web":
+        if configurations.platform.lower() == "web":
             if configurations.browser.lower() == "chrome":
                 return InitWebDriver.init_chrome_driver()
             elif configurations.browser.lower() == "firefox":
                 return InitWebDriver.init_firefox_driver()
             else:
                 raise ConfigurationError(f"Unsupported browser type: {configurations.browser}")
-        elif configurations.platform in ['android', 'ios', 'windows']:
+        elif configurations.platform.lower() in ['android', 'ios', 'windows']:
             return InitWebDriver.init_appium_driver(testcase_id, testcase_name)
         else:
             assert False
@@ -47,9 +46,9 @@ class InitWebDriver:
 
     @staticmethod
     def init_appium_driver(testcase_id, testcase_name):
-        if configurations.platform == "ios":
+        if configurations.platform.lower() == "ios":
             options = capabilities.get_ios_capabilities(testcase_id, testcase_name)
-        elif configurations.platform == "android":
+        elif configurations.platform.lower() == "android":
             options = capabilities.get_android_capabilities(testcase_id, testcase_name)
         else:
             options = capabilities.get_windows_capabilities()

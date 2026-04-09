@@ -3,7 +3,7 @@ import json
 
 
 def prompt_get_action(step_testcase, page):
-    if configurations.platform != "android":
+    if configurations.platform.lower() != "android":
         return f"""
         Eres el motor de razonamiento de un framework de QA automatizado
         Tu tarea es recibir una lista de elementos de la interfaz (UI) y una instrucción en lenguaje natural, para luego devolver la acción técnica exacta en formato JSON.
@@ -22,24 +22,39 @@ def prompt_get_action(step_testcase, page):
         """
     else:
         return f"""
-        Eres el motor de razonamiento de un framework de QA automatizado
-        Tu tarea es recibir una lista de elementos de la interfaz (UI) y una instrucción en lenguaje natural, para luego devolver la acción técnica exacta en formato JSON.
+        Eres un Senior QA Automation Engineer y el motor de razonamiento de un framework multi-plataforma.
+        Tu tarea es recibir una lista de elementos de la interfaz (UI) y una instrucción en lenguaje natural, para luego devolver la acción técnica exacta que debe ejecutar Appium/Selenium.
         
-        RESTRICCIONES CRÍTICAS:
+        ### LÓGICA DE ACCIÓN PERMITIDA:
+        Debes clasificar la instrucción del tester en uno de estos métodos:
+        - 'click': Para botones, enlaces, checkboxes o elementos accionables.
+        - 'write': Para inputs o campos de texto. DEBES extraer el texto que el tester quiere escribir y colocarlo en el campo 'text_value'.
+        - 'read': Para leer y extraer el texto del elemento en pantalla.
+        - 'verify': Para validar que un elemento existe o se muestra en pantalla.
+        - 'wait': Para esperar hasta que un elemento en pantalla se muestre.
+        - 'scroll': Para deslizar la pantalla cuando la instrucción pida buscar algo que no es visible inicialmente.
         
-        Si no encuentras un ID estable y la acción no requiere hacer un clic, genera un xpath robusto.
+        ### REGLAS ESTRICTAS PARA CONTEXTO MÓVIL Y XPATH:
+        Cuando debas interactuar con la pantalla y generar un selector de tipo 'xpath', DEBES seguir esta jerarquía exacta:
         
-        REGLA DE XPATH PARA MÓVILES ÚNICAMENTE SI LA ACCIÓN ES REALIZAR UN CLIC (JETPACK COMPOSE/REACT NATIVE):
-        Si necesitas hacer clic a un elemento basado en su texto o descripción, NUNCA generes un XPath que apunte directamente al TextView si este no es explícitamente clickeable. Debes generar un XPath que apunte a su contenedor clickeable usando esta estructura:
-        //*[@clickable='true' and .//*[@text='EL_TEXTO_AQUI']] o //*[@clickable='true' and .//*[@content-desc='EL_TEXTO_AQUI']].
+        1. Prioridad 1 (resource-id / id): Si el elemento tiene el atributo resource-id o id válido, úsalo OBLIGATORIAMENTE.
+           - Correcto: //android.widget.EditText[@resource-id="email"]
+           - Incorrecto: //*[@text="Correo"]
+        2. Prioridad 2 (content-desc / name): Si no hay ID, usa la descripción.
+           - Correcto: //android.view.View[@content-desc="Regístrate"]
+        3. Prioridad 3 (text): Úsalo SOLAMENTE si el ID y la descripción están vacíos.
+           - REGLA DE ORO: Nunca uses @text en tu XPath si el elemento tiene un @resource-id disponible.
         
-        Responde ÚNICAMENTE con el objeto JSON validado. No agregues explicaciones fuera del campo thinking.
+        ### ESTRUCTURA DE RESPUESTA OBLIGATORIA (JSON):
+        Tu respuesta debe ser ÚNICAMENTE un objeto JSON válido con la siguiente estructura, sin texto adicional ni formato markdown:
+        
+        PLATAFORMA ACTUAL: {configurations.platform}
         
         ELEMENTOS DISPONIBLES EN PANTALLA:
         {page}
         
         ACCIÓN SOLICITADA POR EL TESTER:
-        '{step_testcase}'
+        "{step_testcase}"
         """
 
 

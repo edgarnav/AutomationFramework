@@ -10,7 +10,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.common.actions import interaction
-
 import utilities.constants as constants
 import utilities.logger as log
 import allure
@@ -112,7 +111,7 @@ class ElementInteractions:
                 "Sent the text " + text + " in element with locator value " + locator_value + constants.locator_type + locator_by_type)
             self.take_screenshot(locator_value)
             return True
-        except Exception:
+        except Exception as e:
             self.log.error(
                 "Unable to sent the text " + text + " in element with locator value " + locator_value + constants.locator_type + locator_by_type)
             print_stack()
@@ -201,7 +200,7 @@ class ElementInteractions:
             self.take_screenshot(constants.not_element_displayed)
 
     def get_source(self):
-        time.sleep(5)
+        time.sleep(7)
         try:
             page = self.webdriver.page_source
             return page

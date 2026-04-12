@@ -21,10 +21,14 @@ import json
 
 class ResponseStructure(BaseModel):
     thinking: str = Field(description="Breve justificación de la acción")
-    method: str = Field(description="Solo puede ser: 'click', 'write', 'read', 'verify', 'wait' o 'scroll'")
-    selector_type: str = Field(description="Debe ser: 'id', 'name', 'xpath' o 'data-testid'")
-    selector_value: str = Field(description="El ID o atributo a interactuar")
-    text_value: str | None = Field(default=None, description="Texto a teclear, si aplica")
+    method: str = Field(description="Solo puede ser: 'click', 'write', 'read', 'verify', 'wait', 'scroll' o 'query_execution'")
+    selector_type: str = Field(description="Debe ser: 'id', 'name', 'xpath' o 'data-testid', si aplica")
+    selector_value: str = Field(description="El ID o atributo a interactuar, si aplica")
+    text_value: str = Field(description="Texto a teclear, si aplica")
+    db_query: str = Field(description="Consulta a ejcutar en base de datos, si aplica")
+    db_expected_result: str = Field(description="Resultado que se espera de ejecutar la consulta a base da datos, si aplica")
+    db_result_variable: str = Field(description="Variable en la cual guardar el resultado obtenido de la consulta a base de datos, si aplica")
+    db_url_key: str = Field(description="Llave de la variable de entorno de la cual obtener la URL, si aplica")
 
 
 class AIActionDefinition(ElementInteractions, ManageCache, VariableManager):
@@ -50,18 +54,7 @@ class AIActionDefinition(ElementInteractions, ManageCache, VariableManager):
 
         steps = data_test["steps"]
 
-        if step.upper().startswith("DB_QUERY:"):
-            config_db = json.loads(step.replace("DB_QUERY:", ""))
-            success, res_db = db_actions.perform_step_db(config_db, self.var_manager)
-
-            if not success:
-                diagnosis_db = self.diagnosis_db.perform_diagnosis_db(res_db, config_db["expected"], config_db["query"])
-                allure.attach(json.dumps(diagnosis_db, indent=2), "Diagnosis AI DB")
-                self.log.error(res_db)
-                return False
-            return success
-
-        elif step.upper().startswith("API_REQUEST:"):
+        if step.upper().startswith("API_REQUEST:"):
             config_json = json.loads(step.replace("API_REQUEST:", ""))
             success, response_server = self.api_request.perform_api_request(config_json)
 
@@ -80,7 +73,7 @@ class AIActionDefinition(ElementInteractions, ManageCache, VariableManager):
 
                 return False
 
-        with allure.step(f"Performing: {step}"):
+        with allure.step(f"Perform: {step}"):
 
             if step in steps:
                 self.log.info(f"⚡ [FILE-CACHE] Using data from {test_id}.json")
@@ -188,6 +181,16 @@ class AIActionDefinition(ElementInteractions, ManageCache, VariableManager):
 
             elif method == "verify":
                 return self.is_element_displayed(locator_value, locator_by_type)
+
+            elif method == "query_execution":
+                success, res_db = db_actions.perform_step_db(action, self.var_manager)
+                if not success:
+                    diagnosis_db = self.diagnosis_db.perform_diagnosis_db(res_db, action.get("db_expected_result"),
+                                                                          action.get("db_query"))
+                    allure.attach(json.dumps(diagnosis_db, indent=2), "Diagnosis AI DB")
+                    self.log.error(res_db)
+                    return False
+                return success
 
             else:
                 self.log.error(f"⚠️ Unknown method suggested by AI: {method}")

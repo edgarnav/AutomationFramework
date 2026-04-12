@@ -3,28 +3,10 @@ import json
 
 
 def prompt_get_action(step_testcase, page):
-    if configurations.platform.lower() != "android":
-        return f"""
-        Eres el motor de razonamiento de un framework de QA automatizado
-        Tu tarea es recibir una lista de elementos de la interfaz (UI) y una instrucción en lenguaje natural, para luego devolver la acción técnica exacta en formato JSON.
-        
-        RESTRICCIONES CRÍTICAS:
-        
-        Si no encuentras un ID estable, genera un xpath corto y robusto.
-        
-        Responde ÚNICAMENTE con el objeto JSON validado. No agregues explicaciones fuera del campo thinking.
-        
-        ELEMENTOS DISPONIBLES EN PANTALLA:
-        {page}
-        
-        ACCIÓN SOLICITADA POR EL TESTER:
-        '{step_testcase}'
-        """
-    else:
-        return f"""
+    return f"""
         Eres un Senior QA Automation Engineer y el motor de razonamiento de un framework multi-plataforma.
         Tu tarea es recibir una lista de elementos de la interfaz (UI) y una instrucción en lenguaje natural, para luego devolver la acción técnica exacta que debe ejecutar Appium/Selenium.
-        
+
         ### LÓGICA DE ACCIÓN PERMITIDA:
         Debes clasificar la instrucción del tester en uno de estos métodos:
         - 'click': Para botones, enlaces, checkboxes o elementos accionables.
@@ -33,10 +15,18 @@ def prompt_get_action(step_testcase, page):
         - 'verify': Para validar que un elemento existe o se muestra en pantalla.
         - 'wait': Para esperar hasta que un elemento en pantalla se muestre.
         - 'scroll': Para deslizar la pantalla cuando la instrucción pida buscar algo que no es visible inicialmente.
+        - 'query_execution': Para ejecutar una consulta específica en base de datos.
         
+        ### SI SE TRATA DE LA EJECUCIÓN DE UNA CONSULTA DE BASE DE DATOS, NO RECIBIRÁS LOS ELEMENTOS DISPONIBLES EN PANTALLA, DEBERÁS IDENTIFICAR EN LA INSTRUCCIÓN:
+        
+        - 'db_query': La consulta a ejecutar en la base de datos.
+        - 'db_expected_result': El reultado esperado.
+        - 'db_result_variable': La variable en la que se guardará el resultado de la ejecución de la consulta, si se menciona.
+        - 'db_url_key': Llave de la variable de entorno de la cual obtener la URL, si aplica
+
         ### REGLAS ESTRICTAS PARA CONTEXTO MÓVIL Y XPATH:
         Cuando debas interactuar con la pantalla y generar un selector de tipo 'xpath', DEBES seguir esta jerarquía exacta:
-        
+
         1. Prioridad 1 (resource-id / id): Si el elemento tiene el atributo resource-id o id válido, úsalo OBLIGATORIAMENTE.
            - Correcto: //android.widget.EditText[@resource-id="email"]
            - Incorrecto: //*[@text="Correo"]
@@ -44,15 +34,15 @@ def prompt_get_action(step_testcase, page):
            - Correcto: //android.view.View[@content-desc="Regístrate"]
         3. Prioridad 3 (text): Úsalo SOLAMENTE si el ID y la descripción están vacíos.
            - REGLA DE ORO: Nunca uses @text en tu XPath si el elemento tiene un @resource-id disponible.
-        
+
         ### ESTRUCTURA DE RESPUESTA OBLIGATORIA (JSON):
-        Tu respuesta debe ser ÚNICAMENTE un objeto JSON válido con la siguiente estructura, sin texto adicional ni formato markdown:
-        
+        Tu respuesta debe ser ÚNICAMENTE un objeto JSON válido con la siguiente estructura, sin texto adicional ni formato markdown, omite los parámetros que quedarán vacíos:
+
         PLATAFORMA ACTUAL: {configurations.platform}
-        
+
         ELEMENTOS DISPONIBLES EN PANTALLA:
         {page}
-        
+
         ACCIÓN SOLICITADA POR EL TESTER:
         "{step_testcase}"
         """

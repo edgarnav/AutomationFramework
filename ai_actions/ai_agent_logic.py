@@ -27,7 +27,7 @@ class ResponseStructure(BaseModel):
     text_value: str | None = Field(default=None, description="Texto a teclear, si aplica")
 
 
-class AIActionDefinition(ElementInteractions, ManageCache):
+class AIActionDefinition(ElementInteractions, ManageCache, VariableManager):
 
     log = log.func_logger()
 
@@ -39,10 +39,11 @@ class AIActionDefinition(ElementInteractions, ManageCache):
         self.api_request = PerformAPIValidation
         self.diagnosis_api = PerformDiagnosisAPI
         self.diagnosis_db = PerformDiagnosisDB
-        self.var_manager = VariableManager
+        self.var_manager = VariableManager()
 
     def ai_action_definition(self, step, test_id, test_name):
         data_test = self.load_test_step_cache(test_id)
+        step = self.var_manager.resolve_instruction(step)
 
         if not data_test:
             data_test = {"id": test_id, "name": test_name, "steps": {}}
@@ -56,6 +57,8 @@ class AIActionDefinition(ElementInteractions, ManageCache):
             if not success:
                 diagnosis_db = self.diagnosis_db.perform_diagnosis_db(res_db, config_db["expected"], config_db["query"])
                 allure.attach(json.dumps(diagnosis_db, indent=2), "Diagnosis AI DB")
+                self.log.error(res_db)
+                return False
             return success
 
         elif step.upper().startswith("API_REQUEST:"):

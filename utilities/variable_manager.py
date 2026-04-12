@@ -12,9 +12,9 @@ class VariableManager:
     def get_value(self, key):
         return self.memory.get(key, f"{{{{{{key}}}}}}")
 
-    def resolve_instruction(self, texto):
+    def resolve_instruction(self, step):
         def replace(match):
             key = match.group(1)
             return self.get_value(key)
 
-        return re.sub(r"\{\{(.*?)\}\}", replace, texto)
+        return re.sub(r"\{\{(.*?)}}", replace, step)

@@ -1,20 +1,18 @@
+from sqlalchemy.engine import make_url
 from sqlalchemy import create_engine, text
+import os
 
 
 def perform_step_db(config_db, var_manager):
 
-    conn_data = config_db.get("connection", {})
-
-    for key in conn_data:
-        conn_data[key] = var_manager.resolve_instruction(str(conn_data[key]))
-
-    db_url = build_url(conn_data)
-    if not db_url:
-        return False, "DB not compatible "
-
-    engine = create_engine(db_url)
-    query_final = var_manager.resolver_instruccion(config_db["query"])
+    query_final = config_db.get("query")
     expected = config_db.get("expected", {})
+    db_url_key = config_db.get("db_url_env")
+    save_as = config_db.get("save_as", {})
+
+    db_url_env = os.environ.get(db_url_key)
+    db_url = make_url(db_url_env)
+    engine = create_engine(db_url)
 
     try:
         with engine.connect() as connection:
@@ -22,37 +20,21 @@ def perform_step_db(config_db, var_manager):
             row = result.mappings().first()
 
             if not row:
-                return False, "Record not found in the database"
+                return False, "The query did not generate any records"
 
             errors = []
-            for col, val_esp in expected.items():
-                if str(row.get(col)) != str(val_esp):
-                    errors.append(f"[{col}] expected {val_esp}, obtained {row.get(col)}")
+            for column, expected_value in expected.items():
+                real_value = row.get(column)
+                if str(real_value) != str(expected_value):
+                    errors.append(f"Column '{column}' expected '{expected_value}', but real '{real_value}'")
+
+            for name_variable, value in save_as.items():
+                var_manager.set_variable(name_variable, value)
 
             if errors:
-                return False, f"Validation failed: {', '.join(errors)}"
+                return False, f"Errors in BD: {'; '.join(errors)}"
 
             return True, dict(row)
 
     except Exception as e:
-        return False, f"Connection error: {str(e)}"
-
-
-def build_url(conn_data):
-
-    db_type = conn_data.get("type", "sqlserver").lower()
-    user = conn_data.get("user")
-    password = conn_data.get("pass")
-    host = conn_data.get("host")
-    db_name = conn_data.get("db")
-
-    if db_type == "sqlserver":
-        return f"mssql+pyodbc://{user}:{password}@{host}/{db_name}?driver=ODBC+Driver+17+for+SQL+Server"
-
-    elif db_type == "postgresql":
-        return f"postgresql://{user}:{password}@{host}/{db_name}"
-
-    elif db_type == "oracle":
-        return f"oracle+cx_oracle://{user}:{password}@{host}/?service_name={db_name}"
-
-    return False
+        return False, f"Connectivity errors BD: {str(e)}"

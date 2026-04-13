@@ -10,31 +10,36 @@ class PageCleaner:
         soup = BeautifulSoup(html_source, 'html.parser')
         cleaned_elements = []
 
-        tag_targets = ['button', 'input', 'a', 'select', 'textarea']
+        interactive_tags = ['button', 'a', 'input', 'select', 'textarea']
 
-        for tag in soup.find_all(tag_targets):
+        for elem in soup.find_all(True):
+            tag = elem.name
+            elem_id = elem.get('id', '')
 
-            if tag.get('type') == 'hidden' or 'display: none' in str(tag.get('style', '')):
-                continue
+            is_interactive = tag in interactive_tags
+            has_id = bool(elem_id)
+            is_clickable = elem.get('role') in ['button', 'link', 'tab', 'alert']
 
-            data_element = {
-                "tag": tag.name,
-            }
+            if is_interactive or has_id or is_clickable:
 
-            texto = tag.get_text(strip=True)
-            if texto:
-                data_element["texto"] = texto[:100]
+                text = elem.get_text(separator=" ", strip=True)
+                name = elem.get('name', '')
+                tipo = elem.get('type', '')
 
-            useful_attributes = ['id', 'name', 'type', 'placeholder', 'aria-label', 'role']
-            for attr in useful_attributes:
-                if tag.has_attr(attr):
-                    value = tag.get(attr)
-                    if isinstance(value, list):
-                        value = " ".join(value)
-                    data_element[attr] = value
+                if tag not in interactive_tags and not text and not name:
+                    continue
 
-            if len(data_element) > 1:
-                cleaned_elements.append(data_element)
+                item = {
+                    "tag": tag,
+                    "text": text[:50]
+                }
+
+                if elem_id: item["id"] = elem_id
+                if name: item["name"] = name
+                if tipo: item["type"] = tipo
+
+                if item not in cleaned_elements:
+                    cleaned_elements.append(item)
 
         return cleaned_elements
 

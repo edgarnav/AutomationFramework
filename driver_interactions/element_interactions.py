@@ -113,25 +113,25 @@ class ElementInteractions:
             return True
         except Exception as e:
             self.log.error(
-                "Unable to sent the text " + text + " in element with locator value " + locator_value + constants.locator_type + locator_by_type)
+                "Unable to sent text " + text + " in element with locator value " + locator_value + constants.locator_type + locator_by_type)
             print_stack()
             self.take_screenshot(locator_value)
             return False
 
     def get_text(self, locator_value, locator_type):
-        element_text = None
         try:
             element = self.wait_element(locator_value, locator_type)
             element_text = element.text
             self.log.info(
                 "Got the text " + element_text + " from element with locator value " + locator_value + constants.locator_type + locator_type)
             self.take_screenshot(locator_value)
+            return element_text
         except Exception:
             self.log.error(
-                "Unable to get the text " + element_text + " from element with locator value " + locator_value + constants.locator_type + locator_type)
+                "Unable to get the text from element with locator value " + locator_value + constants.locator_type + locator_type)
             print_stack()
             self.take_screenshot(locator_value)
-        return element_text
+            return False
 
     def select_by_value(self, locator_value, locator_type, value):
         try:

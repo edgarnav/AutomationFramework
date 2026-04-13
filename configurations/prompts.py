@@ -11,7 +11,7 @@ def prompt_get_action(step_testcase, page):
         Debes clasificar la instrucción del tester en uno de estos métodos:
         - 'click': Para botones, enlaces, checkboxes o elementos accionables.
         - 'write': Para inputs o campos de texto. DEBES extraer el texto que el tester quiere escribir y colocarlo en el campo 'text_value'.
-        - 'read': Para leer y extraer el texto del elemento en pantalla.
+        - 'read': Para leer y extraer el texto del elemento en pantalla. DEBES extraer el nombre de la variable donde el tester quiere guardar el valor y colocarlo en el campo 'variable_name'
         - 'verify': Para validar que un elemento existe o se muestra en pantalla.
         - 'wait': Para esperar hasta que un elemento en pantalla se muestre.
         - 'scroll': Para deslizar la pantalla cuando la instrucción pida buscar algo que no es visible inicialmente.

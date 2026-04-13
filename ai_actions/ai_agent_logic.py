@@ -22,13 +22,14 @@ import json
 class ResponseStructure(BaseModel):
     thinking: str = Field(description="Breve justificación de la acción")
     method: str = Field(description="Solo puede ser: 'click', 'write', 'read', 'verify', 'wait', 'scroll' o 'query_execution'")
-    selector_type: str = Field(description="Debe ser: 'id', 'name', 'xpath' o 'data-testid', si aplica")
-    selector_value: str = Field(description="El ID o atributo a interactuar, si aplica")
-    text_value: str = Field(description="Texto a teclear, si aplica")
-    db_query: str = Field(description="Consulta a ejcutar en base de datos, si aplica")
-    db_expected_result: str = Field(description="Resultado que se espera de ejecutar la consulta a base da datos, si aplica")
-    db_result_variable: str = Field(description="Variable en la cual guardar el resultado obtenido de la consulta a base de datos, si aplica")
-    db_url_key: str = Field(description="Llave de la variable de entorno de la cual obtener la URL, si aplica")
+    selector_type: str | None = Field(default=None, description="Debe ser: 'id', 'name', 'xpath' o 'data-testid', si aplica")
+    selector_value: str | None = Field(default=None, description="El ID o atributo a interactuar, si aplica")
+    text_value: str | None = Field(default=None, description="Texto a teclear, si aplica")
+    variable_name: str | None = Field(default=None, description="Nombre de la variable en la cual se guardará el texto obtenido, si aplica")
+    db_query: str | None = Field(default=None, description="Consulta a ejcutar en base de datos, si aplica")
+    db_expected_result: str | None = Field(default=None, description="Resultado que se espera de ejecutar la consulta a base da datos, si aplica")
+    db_result_variable: str | None = Field(default=None, description="Variable en la cual guardar el resultado obtenido de la consulta a base de datos, si aplica")
+    db_url_key: str | None = Field(default=None, description="Llave de la variable de entorno de la cual obtener la URL, si aplica")
 
 
 class AIActionDefinition(ElementInteractions, ManageCache, VariableManager):
@@ -181,6 +182,14 @@ class AIActionDefinition(ElementInteractions, ManageCache, VariableManager):
 
             elif method == "verify":
                 return self.is_element_displayed(locator_value, locator_by_type)
+
+            elif method == "read":
+                text = self.get_text(locator_value, locator_by_type)
+                if text:
+                    self.var_manager.set_variable(action.get("variable_name"), text)
+                    return True
+                else:
+                    return False
 
             elif method == "query_execution":
                 success, res_db = db_actions.perform_step_db(action, self.var_manager)

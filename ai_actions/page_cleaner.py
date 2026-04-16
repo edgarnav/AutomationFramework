@@ -49,16 +49,22 @@ class PageCleaner:
         root = etree.fromstring(xml_source.encode('utf-8'))
         cleaned_elements = []
 
-        for elem in root.xpath("//*[@clickable='true' or @focusable='true']"):
+        for elem in root.xpath("//*[@clickable='true' or @focusable='true' or @class='android.widget.EditText' or (@class='android.widget.TextView' and @text!='')]"):
 
             text_element = elem.get("text", "")
             desc_element = elem.get("content-desc", "")
 
             if not text_element and not desc_element:
-                text_child = elem.xpath(".//*[@text!='']/@text")
-                desc_child = elem.xpath(".//*[@content-desc!='']/@content-desc")
-                text_element = " ".join(text_child) if text_child else ""
-                desc_element = " ".join(desc_child) if desc_child else ""
+                child_text = elem.xpath(".//*[@text!='']/@text")
+                child_desc = elem.xpath(".//*[@content-desc!='']/@content-desc")
+
+                if child_text:
+                    uniq_text = list(dict.fromkeys(child_text))
+                    text_element = " ".join(uniq_text)
+
+                if child_desc:
+                    uniq_desc = list(dict.fromkeys(child_desc))
+                    desc_element = " ".join(uniq_desc)
 
             item = {
                 "type": elem.get("class", "").split('.')[-1],

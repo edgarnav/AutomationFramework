@@ -1,11 +1,8 @@
 from pydantic import BaseModel, Field
-import configurations.configurations as configurations
 import configurations.prompts as prompt
-from google.genai import types
-from google import genai
 import utilities.logger as logger
-import json
-import base64
+from openai import OpenAI
+import os
 
 
 class AIDiagnosisModel(BaseModel):
@@ -21,19 +18,29 @@ class PerformDiagnosis:
     def perform_auto_diagnosis(test_instruction, page, screenshot_b64):
         log = logger.func_logger()
         try:
-            client = genai.Client()
-            response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=[
-                    prompt.prompt_diagnosis(test_instruction, configurations.platform, page),
-                    types.Part.from_bytes(data=base64.b64decode(screenshot_b64), mime_type="image/png")
+            client = OpenAI(base_url=os.environ.get("GENIUS_COPPEL_URL"))
+            response = client.beta.chat.completions.parse(
+                model='gemini/gemini-2.5-flash',
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt.prompt_diagnosis(test_instruction, page)},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{screenshot_b64}"
+                                }
+                            }
+                        ]
+                    }
                 ],
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_schema=AIDiagnosisModel
-                )
+                response_format=AIDiagnosisModel,
+                temperature=0.1
             )
-            return json.loads(response.text)
+
+            return response.choices[0].message.parsed.model_dump(exclude_none=True)
+
         except Exception as e:
             log.error(f'{{"error": "Something went wrong with LLM API: {str(e)}"}}')
             assert False
@@ -50,22 +57,22 @@ class AIDiagnosisAPIModel(BaseModel):
 class PerformDiagnosisAPI:
 
     @staticmethod
-    def perform_diagnosis_api(response_api, expected_criteria):
+    def perform_diagnosis_api(endpoint, http_method, payload_sent, real_response, expected_result):
         log = logger.func_logger()
 
         try:
-            client = genai.Client()
-            response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt.prompt_diagnosis_api(response_api, expected_criteria),
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_schema=AIDiagnosisAPIModel,
-                    temperature=0.1
-                )
+            prompt_system, prompt_user = prompt.prompt_diagnosis_api(endpoint, http_method, payload_sent, real_response, expected_result)
+            client = OpenAI(base_url=os.environ.get("GENIUS_COPPEL_URL"))
+            response = client.beta.chat.completions.parse(
+                model='gemini/gemini-2.0-flash',
+                messages=[
+                    {"role": "system", "content": prompt_system},
+                    {"role": "user", "content": prompt_user}
+                ],
+                response_format=AIDiagnosisAPIModel,
+                temperature=0.1
             )
-
-            return json.loads(response.text)
+            return response.choices[0].message.parsed.model_dump(exclude_none=True)
         except Exception as e:
             log.error(f'{{"error": "Something went wrong with LLM API: {str(e)}"}}')
             assert False
@@ -84,17 +91,18 @@ class PerformDiagnosisDB:
         log = logger.func_logger()
 
         try:
-            client = genai.Client()
-            response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt.prompt_diagnosis_db(response_db, expected_criteria, query),
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_schema=AIDiagnosisAPIModel,
-                    temperature=0.1
-                )
+            prompt_system, prompt_user = prompt.prompt_diagnosis_db(response_db, expected_criteria, query)
+            client = OpenAI(base_url=os.environ.get("GENIUS_COPPEL_URL"))
+            response = client.beta.chat.completions.parse(
+                model='gemini/gemini-2.5-flash',
+                messages=[
+                    {"role": "system", "content": prompt_system},
+                    {"role": "user", "content": prompt_user}
+                ],
+                response_format=AIDiagnosisDBModel,
+                temperature=0.1
             )
-            return json.loads(response.text)
+            return response.choices[0].message.parsed.model_dump(exclude_none=True)
         except Exception as e:
             log.error(f'{{"error": "Something went wrong with LLM API: {str(e)}"}}')
             assert False

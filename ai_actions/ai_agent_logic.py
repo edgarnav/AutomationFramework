@@ -9,14 +9,14 @@ from utilities.saved_testcases_manager import ManageCache
 from utilities.perform_api_request import PerformAPIValidation
 from utilities.variable_manager import VariableManager
 from pydantic import BaseModel, Field
-from google.genai import types
-from google import genai
 import configurations.configurations as configurations
 import utilities.perform_db_query as db_actions
 import configurations.prompts as prompt
 import utilities.logger as log
 import allure
+from openai import OpenAI
 import json
+import os
 
 
 class ResponseStructure(BaseModel):
@@ -64,7 +64,7 @@ class AIActionDefinition(ElementInteractions, ManageCache, VariableManager):
                 diagnosis_api = self.diagnosis_api.perform_diagnosis_api(response_server, config_json["expected_validate"])
 
                 allure.attach(
-                    json.dumps(diagnosis_api, indent=4),
+                    json.dumps(diagnosis_api, indent=4, ensure_ascii=False),
                     name="🤖 AI DIAGNOSIS (API)",
                     attachment_type=allure.attachment_type.JSON
                 )
@@ -125,7 +125,7 @@ class AIActionDefinition(ElementInteractions, ManageCache, VariableManager):
                 allure.attach(self.driver.get_screenshot_as_png(), name="Failure_Capture",
                               attachment_type=allure.attachment_type.PNG)
                 allure.attach(
-                    json.dumps(diagnosis_api, indent=4),
+                    json.dumps(diagnosis_api, indent=4, ensure_ascii=False),
                     name="CONCLUSION_IA_DIAGNOSIS",
                     attachment_type=allure.attachment_type.JSON
                 )
@@ -139,18 +139,21 @@ class AIActionDefinition(ElementInteractions, ManageCache, VariableManager):
         page = self.cleaner_selector(source_page)
 
         try:
-            client = genai.Client()
-            response_ai = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt.prompt_get_action(action_test_case, page),
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_schema=ResponseStructure,
-                    temperature=0.1,
-                ),
+            prompt_system, prompt_user = prompt.prompt_get_action(action_test_case, page)
+            client = OpenAI(base_url=os.environ.get("GENIUS_COPPEL_URL"))
+            response = client.beta.chat.completions.parse(
+                model='gemini/gemini-2.5-flash',
+                messages=[
+                    {"role": "system", "content": prompt_system},
+                    {"role": "user", "content": prompt_user}
+                ],
+                response_format=ResponseStructure,
+                temperature=0.1
             )
-            action = json.loads(response_ai.text)
+            action = response.choices[0].message.parsed.model_dump(exclude_none=True)
+
             return action
+
         except Exception as e:
             self.log.error(f'{{"error": "Something went wrong with LLM API: {str(e)}"}}')
             return False
@@ -196,7 +199,7 @@ class AIActionDefinition(ElementInteractions, ManageCache, VariableManager):
                 if not success:
                     diagnosis_db = self.diagnosis_db.perform_diagnosis_db(res_db, action.get("db_expected_result"),
                                                                           action.get("db_query"))
-                    allure.attach(json.dumps(diagnosis_db, indent=2), "Diagnosis AI DB")
+                    allure.attach(json.dumps(diagnosis_db, indent=2, ensure_ascii=False), "Diagnosis AI DB")
                     self.log.error(res_db)
                     return False
                 return success

@@ -90,17 +90,34 @@ class ElementInteractions:
         return element
 
     def press_element(self, locator_value, locator_by_type):
+        element = ""
         try:
             element = self.wait_element(locator_value, locator_by_type)
             element.click()
             self.log.info(constants.clicked_element + locator_value + constants.locator_type + locator_by_type)
             self.take_screenshot(locator_value)
             return True
-        except Exception:
-            self.log.error(constants.not_clicked_element + locator_value + constants.locator_type + locator_by_type)
-            print_stack()
-            self.take_screenshot(locator_value)
-            return False
+        except Exception as e:
+            self.log.warning(constants.not_clicked_element + locator_value + constants.locator_type + locator_by_type)
+            try:
+                rect = element.rect
+                center_x = int(rect['x'] + (rect['width'] / 2))
+                center_y = int(rect['y'] + (rect['height'] / 2))
+
+                pointer = PointerInput(interaction.POINTER_TOUCH, "pointer")
+                actions = ActionBuilder(self.webdriver, mouse=pointer)
+
+                actions.pointer_action.move_to_location(center_x, center_y)
+                actions.pointer_action.pointer_down()
+                actions.pointer_action.pause(0.1)
+                actions.pointer_action.pointer_up()
+                actions.perform()
+
+            except Exception as coord_error:
+                self.log.error(f"Failed to perform clic by coordinates: {e}. Coordinates {coord_error}")
+                print_stack()
+                self.take_screenshot(locator_value)
+                raise Exception
 
     def send_text(self, text, locator_value, locator_by_type):
         try:

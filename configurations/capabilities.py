@@ -10,7 +10,7 @@ def get_ios_capabilities(testcase_id, testcase_name):
     options.platform_name = configurations.platform
     options.automation_name = "XCUITest"
     options.set_capability("appium:deviceName", ".*")
-    options.app = f"storage:filename={configurations.application_name}"
+    options.app = f"storage:{configurations.application_name}"
     options.auto_grant_permissions = True
     sauce_options = {
         "username":  os.environ.get("SAUCE_USERNAME"),
@@ -27,7 +27,7 @@ def get_android_capabilities(testcase_id, testcase_name):
     options = UiAutomator2Options()
     options.platform_name = configurations.platform
     options.automation_name = "UiAutomator2"
-    options.app = f"storage:filename={configurations.application_name}"
+    options.app = f"storage:{configurations.application_name}"
     options.auto_grant_permissions = True
     sauce_options = {
         "username":  os.environ.get("SAUCE_USERNAME"),

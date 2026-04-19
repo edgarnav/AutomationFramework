@@ -10,7 +10,7 @@ import allure
 def load_testcases_from_excel(path_file):
     df = pd.read_excel(path_file)
 
-    test_cases = df.groupby(['id', 'name'])['step_description'].apply(list).reset_index()
+    test_cases = df.groupby([configurations.column_name_testcase_id, configurations.column_name_testcase_name])[configurations.column_name_testcase_step].apply(list).reset_index()
 
     return test_cases.to_dict('records')
 

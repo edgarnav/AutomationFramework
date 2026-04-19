@@ -10,6 +10,8 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.common.actions import interaction
+
+import configurations
 import utilities.constants as constants
 import utilities.logger as log
 import allure
@@ -161,6 +163,25 @@ class ElementInteractions:
             print_stack()
             self.take_screenshot(locator_value)
             assert False
+
+    def select(self, locator_value, locator_type, value):
+        try:
+            element = self.wait_element(locator_value, locator_type)
+            if configurations.platform == "web":
+                dropdown = Select(element)
+                dropdown.select_by_visible_text(value)
+            else:
+                element.click()
+                time.sleep(1)
+                option = self.wait_element(f"//*[@text='{value}']", locator_type)
+                option.click()
+            self.log.info(constants.element_selected + locator_value + constants.locator_type + locator_type)
+            self.take_screenshot(locator_value)
+        except Exception:
+            self.log.error(constants.not_element_selected + locator_value + constants.locator_type + locator_type)
+            print_stack()
+            self.take_screenshot(locator_value)
+            return False
 
     def is_element_displayed(self, locator_value, locator_by_type):
         try:

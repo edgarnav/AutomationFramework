@@ -21,15 +21,17 @@ import os
 
 class ResponseStructure(BaseModel):
     thinking: str = Field(description="Breve justificación de la acción")
-    method: str = Field(description="Solo puede ser: 'click', 'write', 'read', 'verify', 'wait', 'scroll' o 'query_execution'")
+    method: str = Field(description="Solo puede ser: 'click', 'write', 'read', 'verify', 'wait', 'scroll', 'go_to', 'select o 'query_execution'")
     selector_type: str | None = Field(default=None, description="Debe ser: 'id', 'name', 'xpath' o 'data-testid', si aplica")
     selector_value: str | None = Field(default=None, description="El ID o atributo a interactuar, si aplica")
-    text_value: str | None = Field(default=None, description="Texto a teclear, si aplica")
+    text_value: str | None = Field(default=None, description="Texto a teclear (si es 'write') o la opción a elegir (si es 'select'). Nulo en otros casos.")
+    url: str | None = Field(default=None, description="La URL de la aplicación que indique la acción del tester a la que hay que navegar")
     variable_name: str | None = Field(default=None, description="Nombre de la variable en la cual se guardará el texto obtenido, si aplica")
     db_query: str | None = Field(default=None, description="Consulta a ejcutar en base de datos, si aplica")
     db_expected_result: str | None = Field(default=None, description="Resultado que se espera de ejecutar la consulta a base da datos, si aplica")
     db_result_variable: str | None = Field(default=None, description="Variable en la cual guardar el resultado obtenido de la consulta a base de datos, si aplica")
     db_url_key: str | None = Field(default=None, description="Llave de la variable de entorno de la cual obtener la URL, si aplica")
+    repeat_count: int = Field(default=1, description="Número de veces que se debe repetir la acción (ej: 'Presiona 10 veces' -> 10). Si no se especifica, debe ser 1.")
 
 
 class AIActionDefinition(ElementInteractions, ManageCache, VariableManager):
@@ -158,12 +160,14 @@ class AIActionDefinition(ElementInteractions, ManageCache, VariableManager):
             self.log.error(f'{{"error": "Something went wrong with LLM API: {str(e)}"}}')
             return False
 
-    def perform_action_ai(self, action: dict) -> bool:
+    def perform_action_ai(self, action):
 
         method = action.get("method")
         locator_type = action.get("selector_type")
         locator_value = action.get("selector_value")
         text_value = action.get("text_value")
+        repetitions = action.get('repeat_count', 1)
+        url = action.get("url")
 
         if configurations.platform.lower() in ["android", "ios", "windows"]:
             if locator_type in ["id", "accessibility-id", "automation-id"]:
@@ -175,42 +179,64 @@ class AIActionDefinition(ElementInteractions, ManageCache, VariableManager):
         else:
             locator_by_type = By.ID if locator_type == 'id' else By.XPATH
 
-        try:
-            self.log.info(f"🤖 Executing: {method.upper()} in {locator_type}='{locator_value}'...")
-            if method == "click":
-                return self.press_element(locator_value, locator_by_type)
+        result = False
 
-            elif method == "write":
-                return self.send_text(text_value, locator_value, locator_by_type)
+        for i in range(repetitions):
 
-            elif method == "verify":
-                return self.is_element_displayed(locator_value, locator_by_type)
+            try:
+                self.log.info(f"🤖 Executing: {method.upper()} in {locator_type}='{locator_value}'...")
+                if method == "click":
+                    result = self.press_element(locator_value, locator_by_type)
+                    if repetitions == 1:
+                        return result
 
-            elif method == "read":
-                text = self.get_text(locator_value, locator_by_type)
-                if text:
-                    self.var_manager.set_variable(action.get("variable_name"), text)
-                    return True
+                elif method == "write":
+                    result = self.send_text(text_value, locator_value, locator_by_type)
+                    if repetitions == 1:
+                        return result
+
+                elif method == "go_to":
+                    result = self.launch_web_page(url)
+                    if repetitions == 1:
+                        return result
+
+                elif method == "verify":
+                    result = self.is_element_displayed(locator_value, locator_by_type)
+                    if repetitions == 1:
+                        return result
+
+                elif method == "read":
+                    text = self.get_text(locator_value, locator_by_type)
+                    if text:
+                        self.var_manager.set_variable(action.get("variable_name"), text)
+                        return True
+                    else:
+                        return False
+
+                elif method == "select":
+                    result = self.select(locator_value, locator_by_type, text_value)
+                    if repetitions == 1:
+                        return True
+
+                elif method == "query_execution":
+                    success, res_db = db_actions.perform_step_db(action, self.var_manager)
+                    if not success:
+                        diagnosis_db = self.diagnosis_db.perform_diagnosis_db(res_db, action.get("db_expected_result"),
+                                                                              action.get("db_query"))
+                        allure.attach(json.dumps(diagnosis_db, indent=2, ensure_ascii=False), "Diagnosis AI DB")
+                        self.log.error(res_db)
+                        return False
+                    return success
+
                 else:
+                    self.log.error(f"⚠️ Unknown method suggested by AI: {method}")
                     return False
 
-            elif method == "query_execution":
-                success, res_db = db_actions.perform_step_db(action, self.var_manager)
-                if not success:
-                    diagnosis_db = self.diagnosis_db.perform_diagnosis_db(res_db, action.get("db_expected_result"),
-                                                                          action.get("db_query"))
-                    allure.attach(json.dumps(diagnosis_db, indent=2, ensure_ascii=False), "Diagnosis AI DB")
-                    self.log.error(res_db)
-                    return False
-                return success
-
-            else:
-                self.log.error(f"⚠️ Unknown method suggested by AI: {method}")
+            except Exception as e:
+                self.log.error(f"❌ Failed to interact with element. Error: {str(e)}")
                 return False
 
-        except Exception as e:
-            self.log.error(f"❌ Failed to interact with element. Error: {str(e)}")
-            return False
+        return result
 
     def cleaner_selector(self, source_page):
 

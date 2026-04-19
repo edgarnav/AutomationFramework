@@ -14,9 +14,14 @@ def prompt_get_action(step_testcase, page):
         - 'read': Para leer y extraer el texto del elemento en pantalla. DEBES extraer el nombre de la variable donde el tester quiere guardar el valor y colocarlo en el campo 'variable_name'
         - 'verify': Para validar que un elemento existe o se muestra en pantalla.
         - 'wait': Para esperar hasta que un elemento en pantalla se muestre.
+        - 'go_to': Para ir a la URL que indica el tester en el paso.
+        - 'select': Para listas desplegables (etiquetas <select> o dropdowns). DEBES extraer exactamente la opción que el tester quiere seleccionar y colocarla en el campo 'text_value'.
         - 'scroll': Para deslizar la pantalla cuando la instrucción pida buscar algo que no es visible inicialmente.
         - 'query_execution': Para ejecutar una consulta específica en base de datos.
-        
+
+        ### REGLA DE REPETICIÓN (LOOPS):
+        Si la acción pide explícitamente se repita un número específico de veces (por ejemplo: "Presiona el botón 10 veces"), DEBES extraer ese número entero y colocarlo en el campo repeat_count. Si la instrucción no menciona repeticiones, déjalo en 1.
+
         ### SI SE TRATA DE LA EJECUCIÓN DE UNA CONSULTA DE BASE DE DATOS:
         No recibirás los elementos disponibles en pantalla. Debes extraer la siguiente información de la instrucción:
 

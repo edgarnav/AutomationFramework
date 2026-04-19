@@ -5,13 +5,13 @@ from ai_actions.page_cleaner import PageCleaner
 from ai_actions.ai_diagnosis import PerformDiagnosis
 from ai_actions.ai_diagnosis import PerformDiagnosisAPI
 from ai_actions.ai_diagnosis import PerformDiagnosisDB
-from utilities.saved_testcases_manager import ManageCache
-from utilities.perform_api_request import PerformAPIValidation
-from utilities.variable_manager import VariableManager
+from external_actions.saved_testcases_manager import ManageCache
+from external_actions.perform_api_request import PerformAPIValidation
+from external_actions.variable_manager import VariableManager
 from pydantic import BaseModel, Field
-import configurations.configurations as configurations
-import utilities.perform_db_query as db_actions
-import configurations.prompts as prompt
+import configurations as configurations
+import external_actions.perform_db_query as db_actions
+import utilities.prompts as prompt
 import utilities.logger as log
 import allure
 from openai import OpenAI

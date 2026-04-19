@@ -1,5 +1,5 @@
 from appium.options.android import UiAutomator2Options
-import configurations.configurations as configurations
+import configurations as configurations
 import unicodedata
 import os
 

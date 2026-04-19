@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-import configurations.prompts as prompt
+import utilities.prompts as prompt
 import utilities.logger as logger
 from openai import OpenAI
 import os

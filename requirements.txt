@@ -1,6 +1,6 @@
 accelerate==1.12.0
 aiohappyeyeballs==2.6.1
-aiohttp==3.13.2
+aiohttp==3.13.4
 aiosignal==1.4.0
 allure-behave==2.13.2
 allure-pytest==2.15.3
@@ -17,7 +17,7 @@ Brotli==1.1.0
 certifi==2025.8.3
 cffi==1.17.1
 charset-normalizer==3.4.0
-cryptography==41.0.7
+cryptography==46.0.7
 datasets==4.4.1
 DateTime==5.2
 Deprecated==1.3.1
@@ -25,14 +25,14 @@ dill==0.4.0
 distro==1.9.0
 et_xmlfile==2.0.0
 execnet==2.1.1
-filelock==3.20.0
+filelock==3.20.3
 frozenlist==1.8.0
 fsspec==2025.10.0
 gherkin-official==29.0.0
 google-auth==2.49.0
 google-genai==1.66.0
 h11==0.16.0
-h2==4.1.0
+h2==4.3.0
 hf-xet==1.2.0
 hpack==4.0.0
 httpcore==1.0.9
@@ -69,7 +69,7 @@ propcache==0.4.1
 psutil==7.1.3
 psycopg2-binary==2.9.11
 pyarrow==22.0.0
-pyasn1==0.6.1
+pyasn1==0.6.3
 pyasn1_modules==0.4.2
 PyAutoGUI==0.9.54
 pycparser==2.22
@@ -90,7 +90,7 @@ pyperclip==1.9.0
 PyRect==0.2.0
 PyScreeze==1.0.1
 PySocks==1.7.1
-pytest==8.4.2
+pytest==9.0.3
 pytest-bdd==8.1.0
 pytest-html==4.1.1
 pytest-metadata==3.1.1
@@ -101,7 +101,7 @@ pytweening==1.2.0
 pytz==2024.2
 PyYAML==6.0.3
 regex==2025.11.3
-requests==2.32.5
+requests==2.33.0
 requests-oauthlib==2.0.0
 rsa==4.9.1
 rubicon-objc==0.4.9
@@ -110,7 +110,7 @@ scikit-learn==1.7.2
 scipy==1.16.3
 selenium==4.35.0
 selenium-wire==5.1.0
-setuptools==75.6.0
+setuptools==78.1.1
 six==1.16.0
 sniffio==1.3.1
 sortedcontainers==2.4.0
@@ -122,13 +122,13 @@ threadpoolctl==3.6.0
 tokenizers==0.22.1
 torch==2.9.1
 tqdm==4.67.1
-transformers==4.57.3
+transformers==5.0.0rc3
 trio==0.30.0
 trio-websocket==0.12.2
 typing-inspection==0.4.2
 typing_extensions==4.14.1
 tzdata==2025.2
-urllib3==2.5.0
+urllib3==2.6.3
 urllib3-secure-extra==0.1.0
 webdriver-manager==4.0.1
 websocket-client==1.8.0

@@ -1,4 +1,4 @@
-import configurations.configurations as configurations
+import configurations as configurations
 import json
 import os
 

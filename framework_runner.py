@@ -1,7 +1,7 @@
 from driver_interactions.element_interactions import ElementInteractions
 from driver_interactions.init_driver import InitWebDriver
 from ai_actions.ai_agent_logic import AIActionDefinition
-import configurations.configurations as configurations
+import configurations as configurations
 import pandas as pd
 import pytest
 import allure

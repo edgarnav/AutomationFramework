@@ -3,8 +3,8 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium import webdriver as selenium_driver
 from appium import webdriver as appium_driver
-import configurations.configurations as configurations
-import configurations.capabilities as capabilities
+import configurations as configurations
+import utilities.capabilities as capabilities
 
 
 class InitWebDriver:
